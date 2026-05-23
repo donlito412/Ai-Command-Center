@@ -41,3 +41,9 @@
 - **Task Completed**: Added the main orchestrator runtime, provider adapters for OpenAI/Claude/Gemini with local fallback, specialized Contract/Research/Media-Wealth routing, API endpoints, agent documentation, environment templates, and operational chat interface (TASK-007).
 - **Output File Path**: `/lib/agents/`, `/app/api/orchestrator/route.ts`, `/app/api/agents/[agent]/route.ts`, `/agents/orchestrator/README.md`, `/agents/contracts/README.md`, `/agents/research/README.md`, `/agents/content/README.md`, `/.env.example`, `/app/page.tsx`.
 - **Next Step**: Wait for approval to proceed with Workflow Automation & Integrations Layer (TASK-008).
+
+## [2026-05-23] Dashboard Tab Routing Correction
+- **Agent Name**: Codex
+- **Task Completed**: Refactored the single-page dashboard into dedicated Next.js routes for Dashboard, Contracts, AI Wealth Empire, Wolf Pacc, Game Development, Agents, and Workflows while preserving shared HUD shell, Supabase status, and agent chat functionality.
+- **Output File Path**: `/components/command-center/views.tsx`, `/app/page.tsx`, `/app/contracts/page.tsx`, `/app/wealth-empire/page.tsx`, `/app/wolf-pacc/page.tsx`, `/app/game-dev/page.tsx`, `/app/agents/page.tsx`, `/app/workflows/page.tsx`.
+- **Next Step**: Wait for approval to proceed with Workflow Automation & Integrations Layer (TASK-008).
