@@ -42,6 +42,10 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import type { AgentResult } from "@/lib/agents/types";
+import type {
+  WorkflowEngine,
+  WorkflowTriggerResult
+} from "@/lib/automation/types";
 import { useCommandCenterRealtime } from "@/lib/supabase/use-command-center-realtime";
 
 const navItems = [
@@ -467,6 +471,107 @@ function AgentChatPanel() {
   );
 }
 
+function WorkflowControlPanel() {
+  const [engine, setEngine] = useState<WorkflowEngine>("n8n");
+  const [workflow, setWorkflow] = useState("agent-execution-pipeline");
+  const [result, setResult] = useState<WorkflowTriggerResult | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
+  const [error, setError] = useState("");
+
+  async function triggerAutomation(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsRunning(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/workflows/trigger", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          engine,
+          workflow,
+          payload: {
+            source: "command-center",
+            requestedBy: "dashboard"
+          }
+        })
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error ?? "Workflow trigger failed.");
+      }
+
+      setResult(data as WorkflowTriggerResult);
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Workflow trigger failed."
+      );
+    } finally {
+      setIsRunning(false);
+    }
+  }
+
+  return (
+    <Card className="hud-panel holo-card bg-card/76 backdrop-blur lg:col-span-3">
+      <CardHeader className="relative z-10">
+        <CardTitle>Automation Trigger Console</CardTitle>
+        <CardDescription>
+          Dispatch workflow runs to n8n, Make, or agent webhooks
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="relative z-10 space-y-4">
+        <form className="grid gap-3 lg:grid-cols-[180px_1fr_auto]" onSubmit={triggerAutomation}>
+          <select
+            value={engine}
+            onChange={(event) => setEngine(event.target.value as WorkflowEngine)}
+            className="h-10 rounded-md border border-border/70 bg-background/55 px-3 text-sm outline-none ring-ring/40 transition focus:ring-2"
+          >
+            <option value="n8n">n8n</option>
+            <option value="make">Make</option>
+            <option value="agent">Agent</option>
+          </select>
+          <input
+            value={workflow}
+            onChange={(event) => setWorkflow(event.target.value)}
+            className="h-10 rounded-md border border-border/70 bg-background/55 px-3 text-sm outline-none ring-ring/40 transition focus:ring-2"
+          />
+          <Button type="submit" disabled={isRunning}>
+            <Workflow className="h-4 w-4" />
+            {isRunning ? "Triggering..." : "Trigger Run"}
+          </Button>
+        </form>
+
+        {error ? (
+          <div className="border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            {error}
+          </div>
+        ) : null}
+
+        {result ? (
+          <div className="grid gap-3 lg:grid-cols-4">
+            {[
+              ["Run ID", result.id],
+              ["Engine", result.engine],
+              ["Status", result.status],
+              ["Message", result.message]
+            ].map(([label, value]) => (
+              <div key={label} className="border border-border/70 bg-background/40 p-3">
+                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  {label}
+                </p>
+                <p className="mt-2 break-words text-sm">{value}</p>
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </CardContent>
+    </Card>
+  );
+}
+
 function DashboardContent() {
   const realtime = useCommandCenterRealtime();
   const dashboardStatusMetrics = statusMetrics.map((metric) => ({
@@ -649,6 +754,7 @@ export function WorkflowsView() {
             </CardHeader>
           </Card>
         ))}
+        <WorkflowControlPanel />
       </div>
     </Shell>
   );

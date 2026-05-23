@@ -47,3 +47,9 @@
 - **Task Completed**: Refactored the single-page dashboard into dedicated Next.js routes for Dashboard, Contracts, AI Wealth Empire, Wolf Pacc, Game Development, Agents, and Workflows while preserving shared HUD shell, Supabase status, and agent chat functionality.
 - **Output File Path**: `/components/command-center/views.tsx`, `/app/page.tsx`, `/app/contracts/page.tsx`, `/app/wealth-empire/page.tsx`, `/app/wolf-pacc/page.tsx`, `/app/game-dev/page.tsx`, `/app/agents/page.tsx`, `/app/workflows/page.tsx`.
 - **Next Step**: Wait for approval to proceed with Workflow Automation & Integrations Layer (TASK-008).
+
+## [2026-05-23] Workflow Automation & Integrations Layer
+- **Agent Name**: Codex
+- **Task Completed**: Added n8n and Make workflow templates, workflow trigger API, optional webhook dispatch, optional Supabase automation run logging, agent log synchronization, automation run schema, environment template variables, and Workflow page trigger console (TASK-008).
+- **Output File Path**: `/workflows/n8n/command-center-pipeline.json`, `/workflows/make/command-center-blueprint.json`, `/app/api/workflows/trigger/route.ts`, `/lib/automation/`, `/lib/supabase/server.ts`, `/database/schemas/002_automation_runs.sql`, `/components/command-center/views.tsx`, `/.env.example`, `/lib/supabase/types.ts`.
+- **Next Step**: Wait for approval to proceed with Sound Design & Cinematic HUD Polish (TASK-009).

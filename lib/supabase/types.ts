@@ -74,6 +74,18 @@ export type AgentLog = {
   created_at: string;
 };
 
+export type AutomationRun = {
+  id: string;
+  run_key: string;
+  engine: "n8n" | "make" | "agent";
+  workflow: string;
+  status: "queued" | "running" | "completed" | "failed";
+  payload: Json;
+  message: string;
+  created_at: string;
+  completed_at: string | null;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -132,6 +144,15 @@ export type Database = {
           created_at?: string;
         };
         Update: Partial<AgentLog>;
+      };
+      automation_runs: {
+        Row: AutomationRun;
+        Insert: Omit<AutomationRun, "id" | "created_at" | "completed_at"> & {
+          id?: string;
+          created_at?: string;
+          completed_at?: string | null;
+        };
+        Update: Partial<AutomationRun>;
       };
     };
   };

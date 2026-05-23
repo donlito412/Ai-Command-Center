@@ -1,0 +1,43 @@
+{
+  "name": "AI Command Center Agent Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "command-center-agent-pipeline",
+        "httpMethod": "POST",
+        "responseMode": "lastNode"
+      },
+      "name": "Command Center Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "functionCode": "return [{ json: { status: 'running', workflow: $json.workflow, payload: $json.payload, receivedAt: new Date().toISOString() } }];"
+      },
+      "name": "Normalize Payload",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [260, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json}}"
+      },
+      "name": "Return Status",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [520, 0]
+    }
+  ],
+  "connections": {
+    "Command Center Webhook": {
+      "main": [[{ "node": "Normalize Payload", "type": "main", "index": 0 }]]
+    },
+    "Normalize Payload": {
+      "main": [[{ "node": "Return Status", "type": "main", "index": 0 }]]
+    }
+  }
+}
