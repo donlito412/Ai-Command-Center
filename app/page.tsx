@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Activity,
   AudioWaveform,
@@ -26,6 +28,7 @@ import {
   UploadCloud,
   Workflow
 } from "lucide-react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -135,6 +138,20 @@ const agentRows = [
   { name: "Finance", queue: "Tracking estimates", health: "89%" }
 ];
 
+const fadeUp = {
+  hidden: { opacity: 0, y: 18 },
+  visible: { opacity: 1, y: 0 }
+};
+
+const staggerGroup = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.08
+    }
+  }
+};
+
 function MetricCard({
   label,
   value,
@@ -147,20 +164,22 @@ function MetricCard({
   icon: typeof Activity;
 }) {
   return (
-    <Card className="bg-card/72 py-5 backdrop-blur">
-      <CardContent className="flex items-center justify-between gap-4">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            {label}
-          </p>
-          <p className="mt-2 font-display text-3xl font-semibold">{value}</p>
-          <p className="mt-1 text-sm text-muted-foreground">{detail}</p>
-        </div>
-        <div className="border border-primary/35 bg-primary/10 p-3 text-primary">
-          <Icon className="h-5 w-5" />
-        </div>
-      </CardContent>
-    </Card>
+    <motion.div variants={fadeUp} whileHover={{ y: -4, scale: 1.01 }}>
+      <Card className="hud-panel holo-card bg-card/72 py-5 backdrop-blur">
+        <CardContent className="relative z-10 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              {label}
+            </p>
+            <p className="mt-2 font-display text-3xl font-semibold">{value}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{detail}</p>
+          </div>
+          <div className="pulse-node border border-primary/35 bg-primary/10 p-3 text-primary">
+            <Icon className="h-5 w-5" />
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }
 
@@ -170,9 +189,10 @@ function BusinessPanel({
   panel: (typeof panelData)[number];
 }) {
   return (
-    <Card className="bg-card/78 backdrop-blur">
+    <motion.div variants={fadeUp} whileHover={{ y: -5 }}>
+    <Card className="hud-panel holo-card bg-card/78 backdrop-blur">
       <CardHeader>
-        <div className="flex items-start justify-between gap-4">
+        <div className="relative z-10 flex items-start justify-between gap-4">
           <div className="flex min-w-0 items-start gap-3">
             <div className={`border border-current/40 bg-current/10 p-2 ${panel.accent}`}>
               <panel.icon className="h-5 w-5" />
@@ -185,7 +205,7 @@ function BusinessPanel({
           <BadgeCheck className="h-5 w-5 shrink-0 text-primary" />
         </div>
       </CardHeader>
-      <CardContent className="space-y-5">
+      <CardContent className="relative z-10 space-y-5">
         <div className="grid grid-cols-3 gap-3">
           {panel.stats.map((stat) => (
             <div
@@ -217,19 +237,40 @@ function BusinessPanel({
         </div>
       </CardContent>
     </Card>
+    </motion.div>
+  );
+}
+
+function RadarDisplay() {
+  return (
+    <div className="radar-shell">
+      <div className="radar-grid" />
+      <div className="radar-sweep" />
+      <div className="radar-ring radar-ring-one" />
+      <div className="radar-ring radar-ring-two" />
+      <span className="radar-dot radar-dot-one" />
+      <span className="radar-dot radar-dot-two" />
+      <span className="radar-dot radar-dot-three" />
+    </div>
   );
 }
 
 export default function Home() {
   return (
     <main className="min-h-screen overflow-hidden bg-background text-foreground">
-      <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(90deg,rgba(45,212,191,0.06)_1px,transparent_1px),linear-gradient(180deg,rgba(236,72,153,0.06)_1px,transparent_1px)] bg-[size:64px_64px]" />
+      <div className="pointer-events-none fixed inset-0 animated-grid bg-[linear-gradient(90deg,rgba(45,212,191,0.06)_1px,transparent_1px),linear-gradient(180deg,rgba(236,72,153,0.06)_1px,transparent_1px)] bg-[size:64px_64px]" />
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(45,212,191,0.18),transparent_30%),radial-gradient(circle_at_88%_22%,rgba(236,72,153,0.13),transparent_28%),linear-gradient(180deg,rgba(2,6,23,0.12),rgba(2,6,23,0.92))]" />
+      <div className="scanline-layer" />
 
       <div className="relative z-10 grid min-h-screen lg:grid-cols-[248px_1fr]">
-        <aside className="min-w-0 border-b border-border/70 bg-sidebar/76 px-5 py-5 backdrop-blur lg:border-b-0 lg:border-r">
-          <div className="flex items-center gap-3">
-            <div className="border border-primary/45 bg-primary/10 p-2 text-primary">
+        <motion.aside
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.55, ease: "easeOut" }}
+          className="holo-sidebar min-w-0 border-b border-border/70 bg-sidebar/76 px-5 py-5 backdrop-blur lg:border-b-0 lg:border-r"
+        >
+          <div className="relative z-10 flex items-center gap-3">
+            <div className="pulse-node border border-primary/45 bg-primary/10 p-2 text-primary">
               <Activity className="h-5 w-5" />
             </div>
             <div>
@@ -240,32 +281,42 @@ export default function Home() {
             </div>
           </div>
 
-          <nav className="mt-8 flex flex-wrap gap-2 lg:block lg:space-y-2">
+          <nav className="relative z-10 mt-8 flex flex-wrap gap-2 lg:block lg:space-y-2">
             {navItems.map((item) => (
-              <Button
+              <motion.div
                 key={item.label}
-                variant={item.active ? "default" : "ghost"}
-                className="h-10 justify-start rounded-md px-3 lg:w-full"
+                whileHover={{ x: 3 }}
+                whileTap={{ scale: 0.97 }}
               >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </Button>
+                <Button
+                  variant={item.active ? "default" : "ghost"}
+                  className="h-10 justify-start rounded-md px-3 lg:w-full"
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Button>
+              </motion.div>
             ))}
           </nav>
 
-          <div className="mt-8 hidden border border-border/70 bg-background/35 p-4 lg:block">
+          <div className="hud-panel relative z-10 mt-8 hidden border border-border/70 bg-background/35 p-4 lg:block">
             <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
               Deployment
             </p>
             <p className="mt-2 text-sm">GitHub to Vercel</p>
             <p className="mt-1 text-xs text-primary">main branch auto deploy</p>
           </div>
-        </aside>
+        </motion.aside>
 
         <section className="min-w-0 px-5 py-5 sm:px-7 lg:px-8">
-          <header className="flex flex-col gap-4 border-b border-border/70 pb-5 xl:flex-row xl:items-center xl:justify-between">
+          <motion.header
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, delay: 0.08, ease: "easeOut" }}
+            className="flex flex-col gap-4 border-b border-border/70 pb-5 xl:flex-row xl:items-center xl:justify-between"
+          >
             <div>
-              <div className="mb-3 inline-flex items-center gap-2 border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-primary">
+              <div className="glow-label mb-3 inline-flex items-center gap-2 border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-primary">
                 <DatabaseZap className="h-3.5 w-3.5" />
                 Operational Dashboard
               </div>
@@ -278,38 +329,54 @@ export default function Home() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Button>
-                <Bot className="h-4 w-4" />
-                Run Agents
-              </Button>
-              <Button variant="outline">
-                <Workflow className="h-4 w-4" />
-                View Pipelines
-              </Button>
+              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+                <Button>
+                  <Bot className="h-4 w-4" />
+                  Run Agents
+                </Button>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+                <Button variant="outline">
+                  <Workflow className="h-4 w-4" />
+                  View Pipelines
+                </Button>
+              </motion.div>
             </div>
-          </header>
+          </motion.header>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <motion.div
+            variants={staggerGroup}
+            initial="hidden"
+            animate="visible"
+            className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4"
+          >
             {statusMetrics.map((metric) => (
               <MetricCard key={metric.label} {...metric} />
             ))}
-          </div>
+          </motion.div>
 
-          <div className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-            <Card className="bg-card/76 backdrop-blur">
-              <CardHeader>
+          <motion.div
+            variants={staggerGroup}
+            initial="hidden"
+            animate="visible"
+            className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]"
+          >
+            <motion.div variants={fadeUp}>
+            <Card className="hud-panel holo-card bg-card/76 backdrop-blur">
+              <CardHeader className="relative z-10">
                 <CardTitle>Main Dashboard</CardTitle>
                 <CardDescription>
                   System status, running agents, logs, contracts, wealth, and audio stats
                 </CardDescription>
               </CardHeader>
-              <CardContent className="grid gap-5 lg:grid-cols-3">
+              <CardContent className="relative z-10 grid gap-5 lg:grid-cols-3">
                 <div className="space-y-3 lg:col-span-2">
                   <div className="grid gap-3 sm:grid-cols-3">
                     {["Contracts", "Wealth", "Audio"].map((label, index) => (
-                      <div
+                      <motion.div
                         key={label}
-                        className="border border-border/70 bg-background/40 p-4"
+                        className="hud-panel border border-border/70 bg-background/40 p-4"
+                        whileHover={{ y: -3 }}
                       >
                         <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                           {label}
@@ -319,15 +386,15 @@ export default function Home() {
                         </p>
                         <div className="mt-3 h-2 bg-muted">
                           <div
-                            className="h-full bg-primary shadow-[0_0_18px_hsl(var(--primary)/0.6)]"
+                            className="meter-fill h-full bg-primary shadow-[0_0_18px_hsl(var(--primary)/0.6)]"
                             style={{ width: `${[72, 58, 84][index]}%` }}
                           />
                         </div>
-                      </div>
+                      </motion.div>
                     ))}
                   </div>
 
-                  <div className="border border-border/70 bg-background/40 p-4">
+                  <div className="hud-panel border border-border/70 bg-background/40 p-4">
                     <div className="mb-4 flex items-center justify-between gap-3">
                       <p className="font-medium">Agent Throughput</p>
                       <span className="text-sm text-primary">Live model</span>
@@ -340,7 +407,7 @@ export default function Home() {
                             className="flex-1 bg-primary/20"
                           >
                             <div
-                              className="mt-auto w-full bg-primary"
+                              className="bar-pulse mt-auto w-full bg-primary"
                               style={{ height: `${height}%` }}
                             />
                           </div>
@@ -353,29 +420,34 @@ export default function Home() {
                 <div className="space-y-3">
                   <p className="text-sm font-medium">Execution Log</p>
                   {activityLog.map((entry) => (
-                    <div
+                    <motion.div
                       key={entry}
-                      className="border border-border/60 bg-background/35 px-3 py-2 text-sm text-muted-foreground"
+                      className="hud-panel border border-border/60 bg-background/35 px-3 py-2 text-sm text-muted-foreground"
+                      whileHover={{ x: 4 }}
                     >
                       {entry}
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               </CardContent>
             </Card>
+            </motion.div>
 
-            <Card className="bg-card/76 backdrop-blur">
-              <CardHeader>
+            <motion.div variants={fadeUp}>
+            <Card className="hud-panel holo-card bg-card/76 backdrop-blur">
+              <CardHeader className="relative z-10">
                 <CardTitle>Running Agents</CardTitle>
                 <CardDescription>
                   Queue status and operational health
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="relative z-10 space-y-5">
+                <RadarDisplay />
                 {agentRows.map((agent) => (
-                  <div
+                  <motion.div
                     key={agent.name}
                     className="grid grid-cols-[1fr_auto] gap-3 border-b border-border/55 pb-4 last:border-0 last:pb-0"
+                    whileHover={{ x: 3 }}
                   >
                     <div>
                       <p className="font-medium">{agent.name}</p>
@@ -386,17 +458,23 @@ export default function Home() {
                     <span className="font-display text-lg text-primary">
                       {agent.health}
                     </span>
-                  </div>
+                  </motion.div>
                 ))}
               </CardContent>
             </Card>
-          </div>
+            </motion.div>
+          </motion.div>
 
-          <div className="mt-6 grid gap-6 xl:grid-cols-2">
+          <motion.div
+            variants={staggerGroup}
+            initial="hidden"
+            animate="visible"
+            className="mt-6 grid gap-6 xl:grid-cols-2"
+          >
             {panelData.map((panel) => (
               <BusinessPanel key={panel.title} panel={panel} />
             ))}
-          </div>
+          </motion.div>
         </section>
       </div>
     </main>
