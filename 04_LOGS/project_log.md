@@ -53,3 +53,9 @@
 - **Task Completed**: Added n8n and Make workflow templates, workflow trigger API, optional webhook dispatch, optional Supabase automation run logging, agent log synchronization, automation run schema, environment template variables, and Workflow page trigger console (TASK-008).
 - **Output File Path**: `/workflows/n8n/command-center-pipeline.json`, `/workflows/make/command-center-blueprint.json`, `/app/api/workflows/trigger/route.ts`, `/lib/automation/`, `/lib/supabase/server.ts`, `/database/schemas/002_automation_runs.sql`, `/components/command-center/views.tsx`, `/.env.example`, `/lib/supabase/types.ts`.
 - **Next Step**: Wait for approval to proceed with Sound Design & Cinematic HUD Polish (TASK-009).
+
+## [2026-05-23] Sidebar Deployment Panel Removal
+- **Agent Name**: Codex
+- **Task Completed**: Removed the sidebar Deployment/GitHub to Vercel status panel from the shared command center shell and verified the Wealth Empire route renders as its own page.
+- **Output File Path**: `/components/command-center/views.tsx`.
+- **Next Step**: Wait for approval to proceed with Sound Design & Cinematic HUD Polish (TASK-009).

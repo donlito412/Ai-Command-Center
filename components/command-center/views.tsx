@@ -222,16 +222,6 @@ function Shell({
             })}
           </nav>
 
-          <div className="hud-panel relative z-10 mt-8 hidden border border-border/70 bg-background/35 p-4 lg:block">
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-              Deployment
-            </p>
-            <p className="mt-2 text-sm">GitHub to Vercel</p>
-            <p className="mt-1 text-xs text-primary">main branch auto deploy</p>
-            <p className="mt-3 text-xs text-muted-foreground">
-              Supabase: {realtime.connectionState}
-            </p>
-          </div>
         </motion.aside>
 
         <section className="min-w-0 px-5 py-5 sm:px-7 lg:px-8">
