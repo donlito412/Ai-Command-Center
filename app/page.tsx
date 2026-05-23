@@ -37,6 +37,7 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card";
+import { useCommandCenterRealtime } from "@/lib/supabase/use-command-center-realtime";
 
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, active: true },
@@ -184,10 +185,14 @@ function MetricCard({
 }
 
 function BusinessPanel({
-  panel
+  panel,
+  liveStats
 }: {
   panel: (typeof panelData)[number];
+  liveStats?: { label: string; value: string }[];
 }) {
+  const stats = liveStats ?? panel.stats;
+
   return (
     <motion.div variants={fadeUp} whileHover={{ y: -5 }}>
     <Card className="hud-panel holo-card bg-card/78 backdrop-blur">
@@ -207,7 +212,7 @@ function BusinessPanel({
       </CardHeader>
       <CardContent className="relative z-10 space-y-5">
         <div className="grid grid-cols-3 gap-3">
-          {panel.stats.map((stat) => (
+          {stats.map((stat) => (
             <div
               key={stat.label}
               className="border border-border/70 bg-background/40 px-3 py-2"
@@ -256,6 +261,14 @@ function RadarDisplay() {
 }
 
 export default function Home() {
+  const realtime = useCommandCenterRealtime();
+  const dashboardStatusMetrics = statusMetrics.map((metric) => ({
+    ...metric,
+    ...(realtime.statusMetrics[metric.label] ?? {})
+  }));
+  const dashboardActivityLog = realtime.activityLog ?? activityLog;
+  const dashboardAgentRows = realtime.agentRows ?? agentRows;
+
   return (
     <main className="min-h-screen overflow-hidden bg-background text-foreground">
       <div className="pointer-events-none fixed inset-0 animated-grid bg-[linear-gradient(90deg,rgba(45,212,191,0.06)_1px,transparent_1px),linear-gradient(180deg,rgba(236,72,153,0.06)_1px,transparent_1px)] bg-[size:64px_64px]" />
@@ -305,6 +318,9 @@ export default function Home() {
             </p>
             <p className="mt-2 text-sm">GitHub to Vercel</p>
             <p className="mt-1 text-xs text-primary">main branch auto deploy</p>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Supabase: {realtime.connectionState}
+            </p>
           </div>
         </motion.aside>
 
@@ -318,7 +334,7 @@ export default function Home() {
             <div>
               <div className="glow-label mb-3 inline-flex items-center gap-2 border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-primary">
                 <DatabaseZap className="h-3.5 w-3.5" />
-                Operational Dashboard
+                Operational Dashboard / Supabase {realtime.connectionState}
               </div>
               <h1 className="font-display text-3xl font-semibold sm:text-5xl">
                 AI Cyberpunk Command Center
@@ -350,7 +366,7 @@ export default function Home() {
             animate="visible"
             className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4"
           >
-            {statusMetrics.map((metric) => (
+            {dashboardStatusMetrics.map((metric) => (
               <MetricCard key={metric.label} {...metric} />
             ))}
           </motion.div>
@@ -419,7 +435,7 @@ export default function Home() {
 
                 <div className="space-y-3">
                   <p className="text-sm font-medium">Execution Log</p>
-                  {activityLog.map((entry) => (
+                  {dashboardActivityLog.map((entry) => (
                     <motion.div
                       key={entry}
                       className="hud-panel border border-border/60 bg-background/35 px-3 py-2 text-sm text-muted-foreground"
@@ -443,7 +459,7 @@ export default function Home() {
               </CardHeader>
               <CardContent className="relative z-10 space-y-5">
                 <RadarDisplay />
-                {agentRows.map((agent) => (
+                {dashboardAgentRows.map((agent) => (
                   <motion.div
                     key={agent.name}
                     className="grid grid-cols-[1fr_auto] gap-3 border-b border-border/55 pb-4 last:border-0 last:pb-0"
@@ -472,7 +488,11 @@ export default function Home() {
             className="mt-6 grid gap-6 xl:grid-cols-2"
           >
             {panelData.map((panel) => (
-              <BusinessPanel key={panel.title} panel={panel} />
+              <BusinessPanel
+                key={panel.title}
+                panel={panel}
+                liveStats={realtime.panelStats[panel.title]}
+              />
             ))}
           </motion.div>
         </section>

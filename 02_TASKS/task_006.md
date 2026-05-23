@@ -1,6 +1,6 @@
 # TASK-006: Supabase Authentication & Real-Time Database Setup
 - **Goal**: Connect the dashboard to Supabase, setting up user auth, DB schema, and WebSockets/Realtime listeners.
-- **Status**: PENDING
+- **Status**: DONE
 - **Assigned to**: Antigravity
 - **Expected Outputs**:
   - Supabase client integration & Authentication rules configured
