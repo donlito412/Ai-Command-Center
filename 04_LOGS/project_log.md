@@ -83,3 +83,9 @@
 - **Task Completed**: Hardened Supabase browser client initialization so invalid or partial Vercel public environment values cannot crash the client-rendered dashboard.
 - **Output File Path**: `/lib/supabase/client.ts`, `/command-center/lib/supabase/client.ts`.
 - **Next Step**: Push to `main` and verify Vercel no longer shows the client error page.
+
+## [2026-05-23] Supabase Realtime Error Boundary
+- **Agent Name**: Codex
+- **Task Completed**: Wrapped Supabase dashboard data loading and realtime subscription setup so query or channel failures fall back to an error state instead of crashing the Vercel client page.
+- **Output File Path**: `/lib/supabase/use-command-center-realtime.ts`, `/command-center/lib/supabase/use-command-center-realtime.ts`.
+- **Next Step**: Push to `main` and verify the Vercel Visit page renders the command center.

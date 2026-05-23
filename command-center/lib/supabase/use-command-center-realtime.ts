@@ -66,115 +66,131 @@ export function useCommandCenterRealtime() {
     let mounted = true;
 
     async function loadDashboardData() {
-      const [
-        agentsResult,
-        bidsResult,
-        contentResult,
-        audioResult,
-        gameResult,
-        metricsResult,
-        logsResult
-      ] = await Promise.all([
-        client.from("command_agents").select("*").order("name"),
-        client.from("contract_bids").select("*").order("deadline"),
-        client.from("content_pipelines").select("*").order("created_at", {
-          ascending: false
-        }),
-        client.from("audio_releases").select("*").order("created_at", {
-          ascending: false
-        }),
-        client.from("game_milestones").select("*").order("created_at", {
-          ascending: false
-        }),
-        client.from("system_metrics").select("*").order("created_at", {
-          ascending: false
-        }),
-        client
-          .from("agent_logs")
-          .select("*")
-          .order("created_at", { ascending: false })
-          .limit(8)
-      ]);
+      try {
+        const [
+          agentsResult,
+          bidsResult,
+          contentResult,
+          audioResult,
+          gameResult,
+          metricsResult,
+          logsResult
+        ] = await Promise.all([
+          client.from("command_agents").select("*").order("name"),
+          client.from("contract_bids").select("*").order("deadline"),
+          client.from("content_pipelines").select("*").order("created_at", {
+            ascending: false
+          }),
+          client.from("audio_releases").select("*").order("created_at", {
+            ascending: false
+          }),
+          client.from("game_milestones").select("*").order("created_at", {
+            ascending: false
+          }),
+          client.from("system_metrics").select("*").order("created_at", {
+            ascending: false
+          }),
+          client
+            .from("agent_logs")
+            .select("*")
+            .order("created_at", { ascending: false })
+            .limit(8)
+        ]);
 
-      const hasError = [
-        agentsResult,
-        bidsResult,
-        contentResult,
-        audioResult,
-        gameResult,
-        metricsResult,
-        logsResult
-      ].some((result) => result.error);
+        const hasError = [
+          agentsResult,
+          bidsResult,
+          contentResult,
+          audioResult,
+          gameResult,
+          metricsResult,
+          logsResult
+        ].some((result) => result.error);
 
-      if (!mounted) {
-        return;
-      }
+        if (!mounted) {
+          return;
+        }
 
-      if (hasError) {
+        if (hasError) {
+          setConnectionState("error");
+          return;
+        }
+
+        setState({
+          agents: agentsResult.data ?? [],
+          bids: bidsResult.data ?? [],
+          content: contentResult.data ?? [],
+          audio: audioResult.data ?? [],
+          game: gameResult.data ?? [],
+          metrics: metricsResult.data ?? [],
+          logs: logsResult.data ?? []
+        });
+        setConnectionState("live");
+      } catch {
+        if (!mounted) {
+          return;
+        }
         setConnectionState("error");
-        return;
       }
-
-      setState({
-        agents: agentsResult.data ?? [],
-        bids: bidsResult.data ?? [],
-        content: contentResult.data ?? [],
-        audio: audioResult.data ?? [],
-        game: gameResult.data ?? [],
-        metrics: metricsResult.data ?? [],
-        logs: logsResult.data ?? []
-      });
-      setConnectionState("live");
     }
 
     void loadDashboardData();
 
-    const channel = client
-      .channel("command-center-dashboard")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "command_agents" },
-        () => void loadDashboardData()
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "contract_bids" },
-        () => void loadDashboardData()
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "content_pipelines" },
-        () => void loadDashboardData()
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "audio_releases" },
-        () => void loadDashboardData()
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "game_milestones" },
-        () => void loadDashboardData()
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "system_metrics" },
-        () => void loadDashboardData()
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "agent_logs" },
-        () => void loadDashboardData()
-      )
-      .subscribe((status) => {
-        if (status === "SUBSCRIBED") {
-          setConnectionState("live");
-        }
-      });
+    const channel = (() => {
+      try {
+        return client
+          .channel("command-center-dashboard")
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "command_agents" },
+            () => void loadDashboardData()
+          )
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "contract_bids" },
+            () => void loadDashboardData()
+          )
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "content_pipelines" },
+            () => void loadDashboardData()
+          )
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "audio_releases" },
+            () => void loadDashboardData()
+          )
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "game_milestones" },
+            () => void loadDashboardData()
+          )
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "system_metrics" },
+            () => void loadDashboardData()
+          )
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "agent_logs" },
+            () => void loadDashboardData()
+          )
+          .subscribe((status) => {
+            if (status === "SUBSCRIBED") {
+              setConnectionState("live");
+            }
+          });
+      } catch {
+        setConnectionState("error");
+        return null;
+      }
+    })();
 
     return () => {
       mounted = false;
-      void client.removeChannel(channel);
+      if (channel) {
+        void client.removeChannel(channel);
+      }
     };
   }, []);
 
