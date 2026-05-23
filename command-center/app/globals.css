@@ -128,3 +128,282 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .hud-panel {
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px hsl(var(--primary) / 0.1),
+      0 0 28px hsl(var(--primary) / 0.08),
+      inset 0 0 24px hsl(var(--primary) / 0.04);
+  }
+
+  .hud-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(90deg, transparent, hsl(var(--primary) / 0.16), transparent),
+      linear-gradient(180deg, hsl(var(--foreground) / 0.04), transparent 32%);
+    opacity: 0;
+    transform: translateX(-120%);
+    transition: opacity 180ms ease;
+  }
+
+  .hud-panel:hover::before {
+    animation: holo-sheen 1.25s ease;
+    opacity: 1;
+  }
+
+  .holo-card::after,
+  .holo-sidebar::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      repeating-linear-gradient(
+        0deg,
+        hsl(var(--primary) / 0.08) 0,
+        hsl(var(--primary) / 0.08) 1px,
+        transparent 1px,
+        transparent 9px
+      );
+    mix-blend-mode: screen;
+    opacity: 0.22;
+  }
+
+  .holo-sidebar {
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset -1px 0 0 hsl(var(--primary) / 0.16);
+  }
+
+  .glow-label {
+    box-shadow:
+      0 0 18px hsl(var(--primary) / 0.2),
+      inset 0 0 18px hsl(var(--primary) / 0.08);
+  }
+
+  .pulse-node {
+    animation: pulse-node 2.4s ease-in-out infinite;
+    box-shadow: 0 0 24px hsl(var(--primary) / 0.18);
+  }
+
+  .animated-grid {
+    animation: grid-drift 18s linear infinite;
+  }
+
+  .scanline-layer {
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+    background:
+      linear-gradient(
+        180deg,
+        transparent 0%,
+        hsl(var(--primary) / 0.08) 48%,
+        hsl(var(--primary) / 0.18) 50%,
+        hsl(var(--primary) / 0.08) 52%,
+        transparent 100%
+      ),
+      repeating-linear-gradient(
+        0deg,
+        hsl(var(--foreground) / 0.035) 0,
+        hsl(var(--foreground) / 0.035) 1px,
+        transparent 1px,
+        transparent 4px
+      );
+    background-size: 100% 34vh, 100% 4px;
+    animation: scanline-sweep 6.5s linear infinite;
+    opacity: 0.55;
+  }
+
+  .meter-fill {
+    animation: meter-glow 2.8s ease-in-out infinite;
+  }
+
+  .bar-pulse {
+    animation: bar-pulse 2.2s ease-in-out infinite;
+    transform-origin: bottom;
+  }
+
+  .radar-shell {
+    position: relative;
+    aspect-ratio: 1;
+    width: min(100%, 220px);
+    margin-inline: auto;
+    border: 1px solid hsl(var(--primary) / 0.38);
+    border-radius: 999px;
+    background:
+      radial-gradient(circle, hsl(var(--primary) / 0.18), transparent 60%),
+      hsl(var(--background) / 0.42);
+    box-shadow:
+      0 0 34px hsl(var(--primary) / 0.16),
+      inset 0 0 34px hsl(var(--primary) / 0.1);
+  }
+
+  .radar-grid {
+    position: absolute;
+    inset: 12%;
+    border: 1px solid hsl(var(--primary) / 0.18);
+    border-radius: inherit;
+  }
+
+  .radar-grid::before,
+  .radar-grid::after {
+    content: "";
+    position: absolute;
+    background: hsl(var(--primary) / 0.22);
+  }
+
+  .radar-grid::before {
+    top: 50%;
+    left: -14%;
+    width: 128%;
+    height: 1px;
+  }
+
+  .radar-grid::after {
+    top: -14%;
+    left: 50%;
+    width: 1px;
+    height: 128%;
+  }
+
+  .radar-sweep {
+    position: absolute;
+    inset: 50% 50% 0 0;
+    border-top-left-radius: 100%;
+    background: linear-gradient(45deg, hsl(var(--primary) / 0.42), transparent 58%);
+    transform-origin: 100% 0;
+    animation: radar-sweep 3.2s linear infinite;
+  }
+
+  .radar-ring {
+    position: absolute;
+    inset: 28%;
+    border: 1px solid hsl(var(--primary) / 0.2);
+    border-radius: inherit;
+  }
+
+  .radar-ring-two {
+    inset: 42%;
+  }
+
+  .radar-dot {
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: hsl(var(--primary));
+    box-shadow: 0 0 18px hsl(var(--primary));
+    animation: pulse-node 2s ease-in-out infinite;
+  }
+
+  .radar-dot-one {
+    top: 28%;
+    left: 58%;
+  }
+
+  .radar-dot-two {
+    top: 62%;
+    left: 34%;
+    animation-delay: 400ms;
+  }
+
+  .radar-dot-three {
+    top: 46%;
+    left: 72%;
+    animation-delay: 900ms;
+  }
+}
+
+@keyframes holo-sheen {
+  from {
+    transform: translateX(-120%);
+  }
+
+  to {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes pulse-node {
+  0%,
+  100% {
+    box-shadow: 0 0 18px hsl(var(--primary) / 0.16);
+  }
+
+  50% {
+    box-shadow: 0 0 32px hsl(var(--primary) / 0.42);
+  }
+}
+
+@keyframes grid-drift {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 64px 64px;
+  }
+}
+
+@keyframes scanline-sweep {
+  from {
+    background-position: 0 -45vh, 0 0;
+  }
+
+  to {
+    background-position: 0 120vh, 0 0;
+  }
+}
+
+@keyframes meter-glow {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+
+  50% {
+    filter: brightness(1.45);
+  }
+}
+
+@keyframes bar-pulse {
+  0%,
+  100% {
+    opacity: 0.72;
+    transform: scaleY(0.96);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+@keyframes radar-sweep {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+}

@@ -65,3 +65,9 @@
 - **Task Completed**: Created and pushed an empty redeploy commit to `main` so Vercel rebuilds the current version with the sidebar deployment panel removed.
 - **Output File Path**: No app output files changed; deployment trigger commit `82bdc05`.
 - **Next Step**: Confirm the new Vercel deployment is live, then proceed with Sound Design & Cinematic HUD Polish (TASK-009).
+
+## [2026-05-23] Vercel Root Folder Sync
+- **Agent Name**: Codex
+- **Task Completed**: Synchronized the nested `/command-center` app with the current routed root app because Vercel was still serving the older nested single-page build.
+- **Output File Path**: `/command-center/app`, `/command-center/components/command-center/views.tsx`, `/command-center/lib`, `/command-center/database`, `/command-center/workflows`, `/command-center/package.json`, `/command-center/package-lock.json`, `/command-center/.env.example`.
+- **Next Step**: Push to `main` and confirm Vercel rebuilds the updated nested app.
