@@ -4,10 +4,28 @@ import type { Database } from "./types";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+function hasValidSupabaseConfig() {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return false;
+  }
 
-export const supabase = isSupabaseConfigured
-  ? createClient<Database>(supabaseUrl as string, supabaseAnonKey as string, {
+  try {
+    const url = new URL(supabaseUrl);
+    return url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+export const isSupabaseConfigured = hasValidSupabaseConfig();
+
+export const supabase = (() => {
+  if (!isSupabaseConfigured) {
+    return null;
+  }
+
+  try {
+    return createClient<Database>(supabaseUrl as string, supabaseAnonKey as string, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
@@ -18,5 +36,8 @@ export const supabase = isSupabaseConfigured
           eventsPerSecond: 10
         }
       }
-    })
-  : null;
+    });
+  } catch {
+    return null;
+  }
+})();

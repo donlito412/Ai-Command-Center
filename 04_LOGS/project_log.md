@@ -77,3 +77,9 @@
 - **Task Completed**: Made Vercel build settings explicit in both possible app roots and verified production builds include `/contracts` and all routed pages.
 - **Output File Path**: `/vercel.json`, `/command-center/vercel.json`.
 - **Next Step**: Push to `main` so Vercel rebuilds with the route-safe configuration.
+
+## [2026-05-23] Vercel Client Crash Hardening
+- **Agent Name**: Codex
+- **Task Completed**: Hardened Supabase browser client initialization so invalid or partial Vercel public environment values cannot crash the client-rendered dashboard.
+- **Output File Path**: `/lib/supabase/client.ts`, `/command-center/lib/supabase/client.ts`.
+- **Next Step**: Push to `main` and verify Vercel no longer shows the client error page.
