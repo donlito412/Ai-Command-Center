@@ -26,32 +26,31 @@ A stylized AI-powered operational dashboard built around:
 
 ## Suggested Folder Structure
 ```
-/command-center
-  /apps
-    /dashboard
-    /contracts
-    /wealth-empire
-    /wolf-pacc
-    /game-dev
-  /agents
-    /orchestrator
-    /contracts
-    /research
-    /content
-    /finance
-  /workflows
-    /n8n
-    /make
-  /ui
-    /components
-    /animations
-    /effects
-    /themes
-  /database
-    /schemas
-    /memory
-  /apis
-    /openai
-    /claude
-    /gemini
+/apps
+  /dashboard
+  /contracts
+  /wealth-empire
+  /wolf-pacc
+  /game-dev
+/agents
+  /orchestrator
+  /contracts
+  /research
+  /content
+  /finance
+/workflows
+  /n8n
+  /make
+/ui
+  /components
+  /animations
+  /effects
+  /themes
+/database
+  /schemas
+  /memory
+/apis
+  /openai
+  /claude
+  /gemini
 ```

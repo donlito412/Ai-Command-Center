@@ -14,6 +14,6 @@
 
 ## [2026-05-22] Git & CI/CD Deployment Setup
 - **Agent Name**: Antigravity
-- **Task Completed**: Initialized Git repository, connected remote origin, staged, committed, and pushed code to GitHub, and created Vercel deployment action (TASK-011).
-- **Output File Path**: `.github/workflows/deploy.yml`, `.gitignore`, and Git repository remote tracking on branch `main`.
+- **Task Completed**: Initialized Git repository, connected remote origin, staged, committed, and pushed code to GitHub, configured Vercel deployment, and flattened Next.js project to the repository root for zero-config build compatibility (TASK-011).
+- **Output File Path**: `.gitignore`, Git remote origin, root `package.json`, and flattened project layout (`/app`, `/components`, `/apps`, `/agents`, `/workflows` direct at root).
 - **Next Step**: Proceed with next scheduled development milestones (TASK-003).
