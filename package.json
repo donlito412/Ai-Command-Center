@@ -1,0 +1,10 @@
+{
+  "name": "ai-command-center-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix command-center",
+    "build": "npm run build --prefix command-center",
+    "start": "npm run start --prefix command-center"
+  }
+}
