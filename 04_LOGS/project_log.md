@@ -59,3 +59,9 @@
 - **Task Completed**: Removed the sidebar Deployment/GitHub to Vercel status panel from the shared command center shell and verified the Wealth Empire route renders as its own page.
 - **Output File Path**: `/components/command-center/views.tsx`.
 - **Next Step**: Wait for approval to proceed with Sound Design & Cinematic HUD Polish (TASK-009).
+
+## [2026-05-23] Vercel Redeploy Trigger
+- **Agent Name**: Codex
+- **Task Completed**: Created and pushed an empty redeploy commit to `main` so Vercel rebuilds the current version with the sidebar deployment panel removed.
+- **Output File Path**: No app output files changed; deployment trigger commit `82bdc05`.
+- **Next Step**: Confirm the new Vercel deployment is live, then proceed with Sound Design & Cinematic HUD Polish (TASK-009).
