@@ -14,6 +14,6 @@
 
 ## [2026-05-22] Git & CI/CD Deployment Setup
 - **Agent Name**: Antigravity
-- **Task Completed**: Initialized Git repository, connected remote origin, staged, committed, and pushed code to GitHub, and created deployment action (TASK-011).
+- **Task Completed**: Initialized Git repository, connected remote origin, staged, committed, and pushed code to GitHub, and created Vercel deployment action (TASK-011).
 - **Output File Path**: `.github/workflows/deploy.yml`, `.gitignore`, and Git repository remote tracking on branch `main`.
 - **Next Step**: Proceed with next scheduled development milestones (TASK-003).
