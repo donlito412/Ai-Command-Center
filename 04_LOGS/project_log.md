@@ -35,3 +35,9 @@
 - **Task Completed**: Added Supabase client integration, typed database models, realtime dashboard listener hook, environment variable template, authenticated RLS schema, realtime publication setup, and dashboard live-data bindings with local fallback data (TASK-006).
 - **Output File Path**: `/lib/supabase/client.ts`, `/lib/supabase/types.ts`, `/lib/supabase/use-command-center-realtime.ts`, `/database/schemas/001_command_center.sql`, `/.env.example`, `/app/page.tsx`, `/package.json`, `/package-lock.json`.
 - **Next Step**: Wait for approval to proceed with AI Orchestrator & Specialized Agents Integration (TASK-007).
+
+## [2026-05-23] AI Orchestrator & Specialized Agents Integration
+- **Agent Name**: Codex
+- **Task Completed**: Added the main orchestrator runtime, provider adapters for OpenAI/Claude/Gemini with local fallback, specialized Contract/Research/Media-Wealth routing, API endpoints, agent documentation, environment templates, and operational chat interface (TASK-007).
+- **Output File Path**: `/lib/agents/`, `/app/api/orchestrator/route.ts`, `/app/api/agents/[agent]/route.ts`, `/agents/orchestrator/README.md`, `/agents/contracts/README.md`, `/agents/research/README.md`, `/agents/content/README.md`, `/.env.example`, `/app/page.tsx`.
+- **Next Step**: Wait for approval to proceed with Workflow Automation & Integrations Layer (TASK-008).

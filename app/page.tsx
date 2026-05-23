@@ -29,6 +29,7 @@ import {
   Workflow
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -38,6 +39,7 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { useCommandCenterRealtime } from "@/lib/supabase/use-command-center-realtime";
+import type { AgentResult } from "@/lib/agents/types";
 
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, active: true },
@@ -257,6 +259,118 @@ function RadarDisplay() {
       <span className="radar-dot radar-dot-two" />
       <span className="radar-dot radar-dot-three" />
     </div>
+  );
+}
+
+function AgentChatPanel() {
+  const [prompt, setPrompt] = useState("");
+  const [result, setResult] = useState<AgentResult | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
+  const [error, setError] = useState("");
+
+  async function submitPrompt(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!prompt.trim()) {
+      return;
+    }
+
+    setIsRunning(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/orchestrator", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ prompt })
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error ?? "Agent request failed.");
+      }
+
+      setResult(data as AgentResult);
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Agent request failed."
+      );
+    } finally {
+      setIsRunning(false);
+    }
+  }
+
+  return (
+    <Card className="hud-panel holo-card bg-card/76 backdrop-blur">
+      <CardHeader className="relative z-10">
+        <CardTitle>Operational Agent Chat</CardTitle>
+        <CardDescription>
+          Route prompts through the orchestrator and specialized agents
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="relative z-10 space-y-4">
+        <form className="grid gap-3" onSubmit={submitPrompt}>
+          <textarea
+            value={prompt}
+            onChange={(event) => setPrompt(event.target.value)}
+            placeholder="Send a command to the orchestrator..."
+            className="min-h-28 resize-none rounded-md border border-border/70 bg-background/55 px-3 py-3 text-sm outline-none ring-ring/40 transition focus:ring-2"
+          />
+          <div className="flex flex-wrap items-center gap-3">
+            <Button type="submit" disabled={isRunning}>
+              <Bot className="h-4 w-4" />
+              {isRunning ? "Routing..." : "Route Prompt"}
+            </Button>
+            {result ? (
+              <span className="text-xs uppercase tracking-[0.18em] text-primary">
+                {result.provider} / {result.agent}
+              </span>
+            ) : null}
+          </div>
+        </form>
+
+        {error ? (
+          <div className="border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            {error}
+          </div>
+        ) : null}
+
+        {result ? (
+          <div className="space-y-4">
+            <div className="border border-border/70 bg-background/40 p-4">
+              <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                Output
+              </p>
+              <p className="mt-2 whitespace-pre-line text-sm leading-6">
+                {result.output}
+              </p>
+            </div>
+            <div className="grid gap-3 lg:grid-cols-2">
+              <div className="border border-border/70 bg-background/40 p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  Route
+                </p>
+                <p className="mt-2 text-sm">{result.route.join(" -> ")}</p>
+              </div>
+              <div className="border border-border/70 bg-background/40 p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  Actions
+                </p>
+                <ul className="mt-2 space-y-2 text-sm">
+                  {result.actions.map((action) => (
+                    <li key={action}>{action}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -494,6 +608,15 @@ export default function Home() {
                 liveStats={realtime.panelStats[panel.title]}
               />
             ))}
+          </motion.div>
+
+          <motion.div
+            variants={fadeUp}
+            initial="hidden"
+            animate="visible"
+            className="mt-6"
+          >
+            <AgentChatPanel />
           </motion.div>
         </section>
       </div>
