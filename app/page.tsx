@@ -227,7 +227,7 @@ export default function Home() {
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(45,212,191,0.18),transparent_30%),radial-gradient(circle_at_88%_22%,rgba(236,72,153,0.13),transparent_28%),linear-gradient(180deg,rgba(2,6,23,0.12),rgba(2,6,23,0.92))]" />
 
       <div className="relative z-10 grid min-h-screen lg:grid-cols-[248px_1fr]">
-        <aside className="border-b border-border/70 bg-sidebar/76 px-5 py-5 backdrop-blur lg:border-b-0 lg:border-r">
+        <aside className="min-w-0 border-b border-border/70 bg-sidebar/76 px-5 py-5 backdrop-blur lg:border-b-0 lg:border-r">
           <div className="flex items-center gap-3">
             <div className="border border-primary/45 bg-primary/10 p-2 text-primary">
               <Activity className="h-5 w-5" />
@@ -240,12 +240,12 @@ export default function Home() {
             </div>
           </div>
 
-          <nav className="mt-8 flex gap-2 overflow-x-auto lg:block lg:space-y-2">
+          <nav className="mt-8 flex flex-wrap gap-2 lg:block lg:space-y-2">
             {navItems.map((item) => (
               <Button
                 key={item.label}
                 variant={item.active ? "default" : "ghost"}
-                className="h-10 shrink-0 justify-start rounded-md px-3 lg:w-full"
+                className="h-10 justify-start rounded-md px-3 lg:w-full"
               >
                 <item.icon className="h-4 w-4" />
                 {item.label}
