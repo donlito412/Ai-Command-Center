@@ -71,3 +71,9 @@
 - **Task Completed**: Synchronized the nested `/command-center` app with the current routed root app because Vercel was still serving the older nested single-page build.
 - **Output File Path**: `/command-center/app`, `/command-center/components/command-center/views.tsx`, `/command-center/lib`, `/command-center/database`, `/command-center/workflows`, `/command-center/package.json`, `/command-center/package-lock.json`, `/command-center/.env.example`.
 - **Next Step**: Push to `main` and confirm Vercel rebuilds the updated nested app.
+
+## [2026-05-23] Vercel Route Build Configuration
+- **Agent Name**: Codex
+- **Task Completed**: Made Vercel build settings explicit in both possible app roots and verified production builds include `/contracts` and all routed pages.
+- **Output File Path**: `/vercel.json`, `/command-center/vercel.json`.
+- **Next Step**: Push to `main` so Vercel rebuilds with the route-safe configuration.
