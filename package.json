@@ -2,9 +2,12 @@
   "name": "ai-command-center-root",
   "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    "command-center"
+  ],
   "scripts": {
-    "dev": "npm run dev --prefix command-center",
-    "build": "npm run build --prefix command-center",
-    "start": "npm run start --prefix command-center"
+    "dev": "npm run dev --workspace=command-center",
+    "build": "npm run build --workspace=command-center",
+    "start": "npm run start --workspace=command-center"
   }
 }
