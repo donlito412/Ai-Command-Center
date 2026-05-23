@@ -14,10 +14,15 @@ A stylized AI-powered operational dashboard built around:
 ## Technology Stack
 - **Frontend**: Next.js, React, TailwindCSS, ShadCN UI, Framer Motion
 - **Visual Style**: Aceternity UI, Magic UI, React Bits, Framer Motion, Spline/Rive
-- **Backend**: Supabase (auth, database, storage, realtime, vectors)
+- **Backend & Database**: Supabase (auth, database, storage, realtime, vectors)
 - **AI Layer**: Claude (planning/reasoning), OpenAI (execution/tool calling), Gemini (multimodal/research)
 - **Automation**: n8n (primary), Make/Zapier (secondary)
 - **Voice AI**: ElevenLabs, OpenAI Realtime, Vapi
+
+## Deployment & Hosting
+- **Primary Hosting Platform**: Vercel (integrated directly with GitHub)
+- **Deployment Process**: Automatically deploys pushes to the `main` branch.
+- **Unused Hosting Platforms**: **Firebase Hosting is NOT used** for this project.
 
 ## Suggested Folder Structure
 ```
