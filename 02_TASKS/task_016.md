@@ -1,10 +1,10 @@
-# TASK-016: Product Deployment Verification
-- **Goal**: Verify the Government Contract Center works as a deployed product with real routes, API behavior, database readiness, and user-facing workflows.
+# TASK-016: Functional Game Development Center
+- **Goal**: Turn the Game Dev section into a working product for managing roadmap milestones, tasks, assets, systems, builds, and playtest notes.
 - **Status**: PENDING
 - **Assigned to**: Codex
 - **Expected Outputs**:
-  - Production build verification
-  - Route and API smoke tests
-  - Live deployment verification after GitHub push
-  - Final product walkthrough focused on working features
+  - Roadmap board with milestones, tasks, priority, owner, status, and due dates
+  - Asset tracker with type, file/location, usage status, notes, and approval state
+  - Game system tracker for mechanics, quests, combat, economy, UI, and bugs
+  - Build notes and playtest feedback tracking
   - Output report in `/03_OUTPUTS/`

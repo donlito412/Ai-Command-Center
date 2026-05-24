@@ -1,10 +1,10 @@
-# TASK-015: Contract Workflow Tools
-- **Goal**: Add working workflow tools for managing contract pursuit from discovery through review, notes, documents, and next actions.
+# TASK-015: Functional Wolf Pacc Audio Center
+- **Goal**: Turn the Wolf Pacc section into a working product for managing releases, beat uploads, marketplace listings, promotion tasks, and growth tracking.
 - **Status**: PENDING
 - **Assigned to**: Codex
 - **Expected Outputs**:
-  - Status pipeline for new, reviewing, saved, applying, submitted, won, lost, and archived
-  - Notes and next-action fields per opportunity
-  - Deadline tracking and urgent opportunity view
-  - CSV export for filtered opportunities
+  - Release tracker with title, artist, status, distribution dates, platforms, assets, and next actions
+  - Beat catalog with BPM, key, genre, price, license type, upload status, and marketplace links
+  - Promotion calendar and social growth tracker
+  - Exportable release and beat upload data
   - Output report in `/03_OUTPUTS/`
