@@ -768,6 +768,7 @@ function ContractCenter() {
   const [selectedId, setSelectedId] = useState<string>("");
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("active");
+  const [contractType, setContractType] = useState("all");
   const [aiOnly, setAiOnly] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -783,6 +784,10 @@ function ContractCenter() {
 
       if (nextStatus !== "all") {
         params.set("status", nextStatus);
+      }
+
+      if (query.trim()) {
+        params.set("q", query.trim());
       }
 
       const response = await fetch(`/api/products/contract_opportunities?${params.toString()}`);
@@ -810,7 +815,7 @@ function ContractCenter() {
   useEffect(() => {
     async function loadInitialContracts() {
       try {
-        const response = await fetch("/api/products/contract_opportunities?status=active");
+        const response = await fetch("/api/products/contract_opportunities?status=active&limit=100");
         const data = (await response.json()) as {
           records?: ContractOpportunity[];
           error?: string;
@@ -856,12 +861,35 @@ function ContractCenter() {
         !aiOnly ||
         contract.fit_score >= 70 ||
         contract.tags.some((tag) =>
-          ["ai", "automation", "software", "web", "data", "media", "creative"].includes(tag)
+          ["ai", "automation", "software", "web", "website", "data", "media", "creative", "training", "app", "application"].includes(tag)
         );
+      const typeMatches =
+        contractType === "all" ||
+        contract.tags.some((tag) => {
+          const normalizedTag = tag.toLowerCase();
 
-      return queryMatches && aiMatches;
+          if (contractType === "web-app") {
+            return ["web", "website", "app", "application", "software"].includes(normalizedTag);
+          }
+
+          if (contractType === "media-content") {
+            return ["media", "video", "content", "creative", "audio"].includes(normalizedTag);
+          }
+
+          if (contractType === "data-analytics") {
+            return ["data", "analytics", "dashboard", "reporting"].includes(normalizedTag);
+          }
+
+          if (contractType === "training") {
+            return ["training", "documentation", "technical"].includes(normalizedTag);
+          }
+
+          return normalizedTag === contractType;
+        });
+
+      return queryMatches && aiMatches && typeMatches;
     });
-  }, [aiOnly, contracts, query]);
+  }, [aiOnly, contractType, contracts, query]);
 
   const selectedContract =
     filteredContracts.find((contract) => contract.id === selectedId) ??
@@ -938,12 +966,20 @@ function ContractCenter() {
 
       <motion.div variants={fadeUp}>
         <Card className="hud-panel holo-card bg-card/76 backdrop-blur">
-          <CardContent className="relative z-10 grid gap-3 py-5 lg:grid-cols-[1fr_170px_auto_auto_auto]">
+          <CardContent className="relative z-10 grid gap-3 py-5 lg:grid-cols-[1fr_170px_190px_auto_auto_auto]">
             <label className="flex h-11 items-center gap-2 rounded-md border border-border/70 bg-background/55 px-3">
               <Search className="h-4 w-4 text-muted-foreground" />
               <input
                 value={query}
-                onChange={(event) => setQuery(event.target.value)}
+                onChange={(event) => {
+                  setQuery(event.target.value);
+                  hudAudio.play("click");
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    void loadContracts(status);
+                  }
+                }}
                 placeholder="Search contracts, agencies, tags..."
                 className="h-full min-w-0 flex-1 bg-transparent text-sm outline-none"
               />
@@ -964,6 +1000,26 @@ function ContractCenter() {
               <option value="archived">Archived</option>
               <option value="all">All</option>
             </select>
+            <select
+              value={contractType}
+              onChange={(event) => {
+                setContractType(event.target.value);
+                hudAudio.play("click");
+              }}
+              className="h-11 rounded-md border border-border/70 bg-background/55 px-3 text-sm outline-none"
+              aria-label="Contract type"
+            >
+              <option value="all">All contract types</option>
+              <option value="ai">AI / Automation</option>
+              <option value="web-app">Web / App / Software</option>
+              <option value="media-content">Media / Content</option>
+              <option value="data-analytics">Data / Analytics</option>
+              <option value="training">Training / Technical</option>
+            </select>
+            <Button type="button" variant="outline" onClick={() => void loadContracts(status)}>
+              <Search className="h-4 w-4" />
+              Search
+            </Button>
             <Button
               type="button"
               variant={aiOnly ? "default" : "outline"}

@@ -50,6 +50,61 @@ const fallbackSourceOpportunities: SourceOpportunity[] = [
     value_estimate: 125000,
     notes: "Federal source target for software, data, web applications, and technical implementation.",
     tags: ["federal", "software", "data", "web"]
+  },
+  {
+    title: "Website redesign and web application support",
+    agency: "Allegheny County",
+    source: "Local Procurement",
+    source_url: null,
+    opportunity_number: "LOCAL-WEB-002",
+    deadline_at: "2026-06-21T21:00:00.000Z",
+    value_estimate: 60000,
+    notes: "Website, portal, and app support opportunity.",
+    tags: ["web", "website", "application", "software"]
+  },
+  {
+    title: "Video production and digital media campaign",
+    agency: "Public Outreach Office",
+    source: "Local Procurement",
+    source_url: null,
+    opportunity_number: "LOCAL-MEDIA-003",
+    deadline_at: "2026-06-27T21:00:00.000Z",
+    value_estimate: 40000,
+    notes: "Creative media, production, editing, and outreach support.",
+    tags: ["media", "video", "content", "creative"]
+  },
+  {
+    title: "AI tools training and staff enablement",
+    agency: "Workforce Development Department",
+    source: "Local Procurement",
+    source_url: null,
+    opportunity_number: "LOCAL-TRAIN-004",
+    deadline_at: "2026-07-01T21:00:00.000Z",
+    value_estimate: 35000,
+    notes: "Training, AI tool onboarding, documentation, and staff workflow support.",
+    tags: ["ai", "training", "technical", "documentation"]
+  },
+  {
+    title: "Data dashboard and reporting modernization",
+    agency: "Public Data Office",
+    source: "Local Procurement",
+    source_url: null,
+    opportunity_number: "LOCAL-DATA-005",
+    deadline_at: "2026-07-09T21:00:00.000Z",
+    value_estimate: 80000,
+    notes: "Dashboard, reporting, analytics, and operational visibility opportunity.",
+    tags: ["data", "analytics", "dashboard", "software"]
+  },
+  {
+    title: "Mobile app maintenance and citizen services portal support",
+    agency: "Municipal Digital Services",
+    source: "Local Procurement",
+    source_url: null,
+    opportunity_number: "LOCAL-APP-006",
+    deadline_at: "2026-07-12T21:00:00.000Z",
+    value_estimate: 70000,
+    notes: "Mobile, app, portal, and citizen service workflow support.",
+    tags: ["app", "application", "software", "web"]
   }
 ];
 
