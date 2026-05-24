@@ -1,6 +1,6 @@
 # TASK-012: Core Product Data Layer
 - **Goal**: Build the shared product data layer that supports every working module in the command center.
-- **Status**: PENDING
+- **Status**: DONE
 - **Assigned to**: Codex
 - **Expected Outputs**:
   - Database schema for contracts, content assets, leads, audio releases, beat uploads, game tasks, agents, workflows, notes, statuses, deadlines, and activity logs
