@@ -774,6 +774,11 @@ function ContractCenter() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState("");
   const hudAudio = useHudAudio();
+  const isActualOpportunityLink = (contract: ContractOpportunity) =>
+    Boolean(
+      contract.source_url &&
+        !["local-fallback", "Local Procurement", "Pittsburgh Procurement", "PA eMarketplace"].includes(contract.source)
+    );
 
   async function loadContracts(nextStatus = status) {
     setIsLoading(true);
@@ -1181,7 +1186,7 @@ function ContractCenter() {
                       <Button asChild type="button" variant="outline">
                         <a href={selectedContract.source_url} target="_blank" rel="noreferrer">
                           <ExternalLink className="h-4 w-4" />
-                          Source
+                          {isActualOpportunityLink(selectedContract) ? "Open Opportunity" : "Search Source"}
                         </a>
                       </Button>
                     ) : null}

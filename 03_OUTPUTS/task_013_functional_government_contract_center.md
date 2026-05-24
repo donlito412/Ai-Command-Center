@@ -6,6 +6,7 @@
 - Added contract-type filtering for AI/automation, web/app/software, media/content, data/analytics, and training/technical opportunities.
 - Expanded default fallback opportunities so the page loads multiple usable contract records before any external source refresh.
 - Added explicit Search button that queries the product API with the entered search term.
+- Changed fallback/source-target records to use procurement search links and label them `Search Source`; real imported records with actual posting URLs show `Open Opportunity`.
 - Added contract fit scoring and deadline urgency helpers.
 - Added `/api/contracts/refresh` for source refresh/import.
 - Added SAM.gov API support when `SAM_GOV_API_KEY` is configured.
