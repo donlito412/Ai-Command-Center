@@ -1,6 +1,6 @@
 # TASK-013: Functional Government Contract Center
 - **Goal**: Turn the Contracts section into a working product for finding, saving, filtering, and managing government contract opportunities.
-- **Status**: PENDING
+- **Status**: DONE
 - **Assigned to**: Codex
 - **Expected Outputs**:
   - Contract list UI with search, filters, opportunity detail view, and saved/favorite actions

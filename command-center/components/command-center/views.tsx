@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, ReactNode, useState } from "react";
+import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -15,6 +15,8 @@ import {
   CircleDollarSign,
   ClipboardCheck,
   DatabaseZap,
+  Download,
+  ExternalLink,
   FileSearch,
   Gauge,
   LayoutDashboard,
@@ -24,8 +26,10 @@ import {
   RadioTower,
   Rocket,
   ScrollText,
+  Search,
   ShieldCheck,
   Sparkles,
+  Star,
   Target,
   Trophy,
   UploadCloud,
@@ -49,6 +53,8 @@ import type {
   WorkflowTriggerResult
 } from "@/lib/automation/types";
 import { useHudAudio } from "@/lib/audio/use-hud-audio";
+import { getContractUrgency } from "@/lib/contracts/matching";
+import type { ContractOpportunity } from "@/lib/products/types";
 import { useCommandCenterRealtime } from "@/lib/supabase/use-command-center-realtime";
 
 const navItems = [
@@ -715,6 +721,429 @@ function SinglePanelPage({ panelTitle }: { panelTitle: string }) {
   );
 }
 
+function downloadContractsCsv(contracts: ContractOpportunity[]) {
+  const headers = [
+    "Title",
+    "Agency",
+    "Status",
+    "Priority",
+    "Fit Score",
+    "Deadline",
+    "Value",
+    "Source",
+    "URL",
+    "Notes"
+  ];
+  const rows = contracts.map((contract) => [
+    contract.title,
+    contract.agency,
+    contract.status,
+    contract.priority,
+    String(contract.fit_score),
+    contract.deadline_at ?? "",
+    contract.value_estimate ? String(contract.value_estimate) : "",
+    contract.source,
+    contract.source_url ?? "",
+    contract.notes ?? ""
+  ]);
+  const csv = [headers, ...rows]
+    .map((row) =>
+      row
+        .map((cell) => `"${cell.replaceAll("\"", "\"\"")}"`)
+        .join(",")
+    )
+    .join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = "contract-opportunities.csv";
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function ContractCenter() {
+  const [contracts, setContracts] = useState<ContractOpportunity[]>([]);
+  const [selectedId, setSelectedId] = useState<string>("");
+  const [query, setQuery] = useState("");
+  const [status, setStatus] = useState("active");
+  const [aiOnly, setAiOnly] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState("");
+  const hudAudio = useHudAudio();
+
+  async function loadContracts(nextStatus = status) {
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const params = new URLSearchParams();
+
+      if (nextStatus !== "all") {
+        params.set("status", nextStatus);
+      }
+
+      const response = await fetch(`/api/products/contract_opportunities?${params.toString()}`);
+      const data = (await response.json()) as {
+        records?: ContractOpportunity[];
+        error?: string;
+      };
+
+      if (!response.ok) {
+        throw new Error(data.error ?? "Contract load failed.");
+      }
+
+      const records = data.records ?? [];
+
+      setContracts(records);
+      setSelectedId((current) => current || records[0]?.id || "");
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Contract load failed.");
+      hudAudio.play("alert");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    async function loadInitialContracts() {
+      try {
+        const response = await fetch("/api/products/contract_opportunities?status=active");
+        const data = (await response.json()) as {
+          records?: ContractOpportunity[];
+          error?: string;
+        };
+
+        if (!response.ok) {
+          throw new Error(data.error ?? "Contract load failed.");
+        }
+
+        const records = data.records ?? [];
+
+        setContracts(records);
+        setSelectedId(records[0]?.id || "");
+      } catch (requestError) {
+        setError(requestError instanceof Error ? requestError.message : "Contract load failed.");
+        hudAudio.play("alert");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    void loadInitialContracts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const filteredContracts = useMemo(() => {
+    const loweredQuery = query.toLowerCase();
+
+    return contracts.filter((contract) => {
+      const queryMatches =
+        !loweredQuery ||
+        [
+          contract.title,
+          contract.agency,
+          contract.source,
+          contract.notes ?? "",
+          contract.tags.join(" ")
+        ]
+          .join(" ")
+          .toLowerCase()
+          .includes(loweredQuery);
+      const aiMatches =
+        !aiOnly ||
+        contract.fit_score >= 70 ||
+        contract.tags.some((tag) =>
+          ["ai", "automation", "software", "web", "data", "media", "creative"].includes(tag)
+        );
+
+      return queryMatches && aiMatches;
+    });
+  }, [aiOnly, contracts, query]);
+
+  const selectedContract =
+    filteredContracts.find((contract) => contract.id === selectedId) ??
+    filteredContracts[0] ??
+    contracts[0];
+  const urgentCount = contracts.filter((contract) => {
+    const urgency = getContractUrgency(contract);
+
+    return urgency.includes("days left") || urgency === "Past due";
+  }).length;
+  const savedCount = contracts.filter((contract) => contract.status === "saved").length;
+
+  async function refreshSources() {
+    setIsRefreshing(true);
+    setError("");
+    hudAudio.play("scan");
+
+    try {
+      const response = await fetch("/api/contracts/refresh", { method: "POST" });
+      const data = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        throw new Error(data.error ?? "Source refresh failed.");
+      }
+
+      hudAudio.play("transition");
+      await loadContracts(status);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Source refresh failed.");
+      hudAudio.play("alert");
+    } finally {
+      setIsRefreshing(false);
+    }
+  }
+
+  async function updateContract(id: string, updates: Partial<ContractOpportunity>) {
+    const response = await fetch("/api/products/contract_opportunities", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, ...updates })
+    });
+    const data = (await response.json()) as {
+      record?: ContractOpportunity;
+      error?: string;
+    };
+
+    if (!response.ok || !data.record) {
+      throw new Error(data.error ?? "Contract update failed.");
+    }
+
+    setContracts((current) =>
+      current.map((contract) => (contract.id === id ? data.record as ContractOpportunity : contract))
+    );
+    hudAudio.play("transition");
+  }
+
+  return (
+    <motion.div variants={staggerGroup} initial="hidden" animate="visible" className="mt-6 space-y-6">
+      <motion.div variants={fadeUp} className="grid gap-4 md:grid-cols-4">
+        {[
+          ["Visible", filteredContracts.length],
+          ["Tracked", contracts.length],
+          ["Saved", savedCount],
+          ["Urgent", urgentCount]
+        ].map(([label, value]) => (
+          <Card key={label} className="hud-panel holo-card bg-card/72 py-5 backdrop-blur">
+            <CardContent className="relative z-10">
+              <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
+              <p className="mt-2 font-display text-3xl font-semibold">{value}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </motion.div>
+
+      <motion.div variants={fadeUp}>
+        <Card className="hud-panel holo-card bg-card/76 backdrop-blur">
+          <CardContent className="relative z-10 grid gap-3 py-5 lg:grid-cols-[1fr_170px_auto_auto_auto]">
+            <label className="flex h-11 items-center gap-2 rounded-md border border-border/70 bg-background/55 px-3">
+              <Search className="h-4 w-4 text-muted-foreground" />
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search contracts, agencies, tags..."
+                className="h-full min-w-0 flex-1 bg-transparent text-sm outline-none"
+              />
+            </label>
+            <select
+              value={status}
+              onChange={(event) => {
+                setStatus(event.target.value);
+                void loadContracts(event.target.value);
+              }}
+              className="h-11 rounded-md border border-border/70 bg-background/55 px-3 text-sm outline-none"
+            >
+              <option value="active">Active</option>
+              <option value="saved">Saved</option>
+              <option value="reviewing">Reviewing</option>
+              <option value="in_progress">Applying</option>
+              <option value="completed">Submitted</option>
+              <option value="archived">Archived</option>
+              <option value="all">All</option>
+            </select>
+            <Button
+              type="button"
+              variant={aiOnly ? "default" : "outline"}
+              onClick={() => setAiOnly((current) => !current)}
+            >
+              <Sparkles className="h-4 w-4" />
+              AI Fit
+            </Button>
+            <Button type="button" variant="outline" onClick={() => downloadContractsCsv(filteredContracts)}>
+              <Download className="h-4 w-4" />
+              CSV
+            </Button>
+            <Button type="button" onClick={refreshSources} disabled={isRefreshing}>
+              <FileSearch className="h-4 w-4" />
+              {isRefreshing ? "Refreshing" : "Refresh Sources"}
+            </Button>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {error ? (
+        <div className="border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          {error}
+        </div>
+      ) : null}
+
+      <div className="grid gap-6 xl:grid-cols-[1fr_0.72fr]">
+        <motion.div variants={fadeUp}>
+          <Card className="hud-panel holo-card bg-card/76 backdrop-blur">
+            <CardHeader className="relative z-10">
+              <CardTitle>Contract Opportunities</CardTitle>
+              <CardDescription>Search, save, score, and manage active opportunities</CardDescription>
+            </CardHeader>
+            <CardContent className="relative z-10 space-y-3">
+              {isLoading ? (
+                <div className="border border-border/70 bg-background/40 p-4 text-sm text-muted-foreground">
+                  Loading contract records...
+                </div>
+              ) : null}
+              {!isLoading && filteredContracts.length === 0 ? (
+                <div className="border border-border/70 bg-background/40 p-4 text-sm text-muted-foreground">
+                  No matching opportunities. Refresh sources or clear filters.
+                </div>
+              ) : null}
+              {filteredContracts.map((contract) => (
+                <button
+                  key={contract.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedId(contract.id);
+                    hudAudio.play("click");
+                  }}
+                  className={`block w-full border p-4 text-left transition ${
+                    selectedContract?.id === contract.id
+                      ? "border-primary/70 bg-primary/10"
+                      : "border-border/70 bg-background/40 hover:border-primary/40"
+                  }`}
+                >
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="min-w-0">
+                      <p className="font-medium">{contract.title}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {contract.agency} / {contract.source}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 gap-2 text-xs uppercase tracking-[0.16em]">
+                      <span className="border border-primary/40 bg-primary/10 px-2 py-1 text-primary">
+                        {contract.fit_score}% fit
+                      </span>
+                      <span className="border border-border/70 px-2 py-1 text-muted-foreground">
+                        {getContractUrgency(contract)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {contract.tags.slice(0, 6).map((tag) => (
+                      <span key={tag} className="border border-border/60 px-2 py-1 text-xs text-muted-foreground">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </button>
+              ))}
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div variants={fadeUp}>
+          <Card className="hud-panel holo-card bg-card/76 backdrop-blur">
+            <CardHeader className="relative z-10">
+              <CardTitle>Opportunity Detail</CardTitle>
+              <CardDescription>Status, notes, deadline, and source actions</CardDescription>
+            </CardHeader>
+            <CardContent className="relative z-10 space-y-4">
+              {selectedContract ? (
+                <>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Selected</p>
+                    <p className="mt-2 font-display text-xl font-semibold">{selectedContract.title}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{selectedContract.agency}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="border border-border/70 bg-background/40 p-3">
+                      <p className="text-xs text-muted-foreground">Fit Score</p>
+                      <p className="mt-1 font-display text-2xl text-primary">{selectedContract.fit_score}%</p>
+                    </div>
+                    <div className="border border-border/70 bg-background/40 p-3">
+                      <p className="text-xs text-muted-foreground">Deadline</p>
+                      <p className="mt-1 font-display text-lg">{getContractUrgency(selectedContract)}</p>
+                    </div>
+                  </div>
+                  <select
+                    value={selectedContract.status}
+                    onChange={(event) =>
+                      void updateContract(selectedContract.id, {
+                        status: event.target.value as ContractOpportunity["status"]
+                      })
+                    }
+                    className="h-11 w-full rounded-md border border-border/70 bg-background/55 px-3 text-sm outline-none"
+                  >
+                    <option value="active">Active</option>
+                    <option value="saved">Saved</option>
+                    <option value="reviewing">Reviewing</option>
+                    <option value="in_progress">Applying</option>
+                    <option value="completed">Submitted</option>
+                    <option value="archived">Archived</option>
+                  </select>
+                  <textarea
+                    value={selectedContract.notes ?? ""}
+                    onChange={(event) =>
+                      setContracts((current) =>
+                        current.map((contract) =>
+                          contract.id === selectedContract.id
+                            ? { ...contract, notes: event.target.value }
+                            : contract
+                        )
+                      )
+                    }
+                    onBlur={(event) =>
+                      void updateContract(selectedContract.id, {
+                        notes: event.target.value
+                      })
+                    }
+                    className="min-h-32 w-full resize-none rounded-md border border-border/70 bg-background/55 px-3 py-3 text-sm outline-none"
+                  />
+                  <div className="flex flex-wrap gap-3">
+                    <Button
+                      type="button"
+                      onClick={() =>
+                        void updateContract(selectedContract.id, {
+                          status: "saved"
+                        })
+                      }
+                    >
+                      <Star className="h-4 w-4" />
+                      Save
+                    </Button>
+                    {selectedContract.source_url ? (
+                      <Button asChild type="button" variant="outline">
+                        <a href={selectedContract.source_url} target="_blank" rel="noreferrer">
+                          <ExternalLink className="h-4 w-4" />
+                          Source
+                        </a>
+                      </Button>
+                    ) : null}
+                  </div>
+                </>
+              ) : (
+                <div className="border border-border/70 bg-background/40 p-4 text-sm text-muted-foreground">
+                  Select an opportunity to review details.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+}
+
 export function DashboardHome() {
   return (
     <Shell
@@ -730,7 +1159,7 @@ export function DashboardHome() {
 export function ContractsView() {
   return (
     <Shell title="Government Contract Center" eyebrow="Contracts" description="Bid tracking, vendor compliance, and deadline control.">
-      <SinglePanelPage panelTitle="Government Contract Center" />
+      <ContractCenter />
     </Shell>
   );
 }
