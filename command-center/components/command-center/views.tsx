@@ -768,8 +768,9 @@ function ContractCenter() {
   const [selectedId, setSelectedId] = useState<string>("");
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("active");
+  const [opportunityScope, setOpportunityScope] = useState("all");
   const [contractType, setContractType] = useState("all");
-  const [aiOnly, setAiOnly] = useState(true);
+  const [aiOnly, setAiOnly] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState("");
@@ -889,12 +890,33 @@ function ContractCenter() {
             return ["training", "documentation", "technical"].includes(normalizedTag);
           }
 
+          if (contractType === "subcontracting") {
+            return ["subcontracting", "teaming", "prime", "services"].includes(normalizedTag);
+          }
+
+          if (contractType === "facilities") {
+            return ["facilities", "maintenance", "operations"].includes(normalizedTag);
+          }
+
+          if (contractType === "staffing-admin") {
+            return ["staffing", "admin", "administrative", "services"].includes(normalizedTag);
+          }
+
           return normalizedTag === contractType;
         });
+      const scopeMatches =
+        opportunityScope === "all" ||
+        contract.tags.includes(opportunityScope) ||
+        (opportunityScope === "sled" &&
+          ["PA eMarketplace", "Pittsburgh Procurement", "Local Procurement", "local-fallback"].includes(contract.source)) ||
+        (opportunityScope === "local" &&
+          ["Pittsburgh Procurement", "Local Procurement", "local-fallback"].includes(contract.source)) ||
+        (opportunityScope === "state" && contract.source === "PA eMarketplace") ||
+        (opportunityScope === "federal" && contract.source === "SAM.gov");
 
-      return queryMatches && aiMatches && typeMatches;
+      return queryMatches && aiMatches && typeMatches && scopeMatches;
     });
-  }, [aiOnly, contractType, contracts, query]);
+  }, [aiOnly, contractType, contracts, opportunityScope, query]);
 
   const selectedContract =
     filteredContracts.find((contract) => contract.id === selectedId) ??
@@ -971,7 +993,7 @@ function ContractCenter() {
 
       <motion.div variants={fadeUp}>
         <Card className="hud-panel holo-card bg-card/76 backdrop-blur">
-          <CardContent className="relative z-10 grid gap-3 py-5 lg:grid-cols-[1fr_170px_190px_auto_auto_auto]">
+          <CardContent className="relative z-10 grid gap-3 py-5 xl:grid-cols-[1fr_150px_150px_190px_auto_auto_auto]">
             <label className="flex h-11 items-center gap-2 rounded-md border border-border/70 bg-background/55 px-3">
               <Search className="h-4 w-4 text-muted-foreground" />
               <input
@@ -1006,6 +1028,22 @@ function ContractCenter() {
               <option value="all">All</option>
             </select>
             <select
+              value={opportunityScope}
+              onChange={(event) => {
+                setOpportunityScope(event.target.value);
+                hudAudio.play("click");
+              }}
+              className="h-11 rounded-md border border-border/70 bg-background/55 px-3 text-sm outline-none"
+              aria-label="Opportunity scope"
+            >
+              <option value="all">All scopes</option>
+              <option value="sled">SLED</option>
+              <option value="state">State</option>
+              <option value="local">Local</option>
+              <option value="federal">Federal</option>
+              <option value="subcontracting">Subcontracting</option>
+            </select>
+            <select
               value={contractType}
               onChange={(event) => {
                 setContractType(event.target.value);
@@ -1020,6 +1058,9 @@ function ContractCenter() {
               <option value="media-content">Media / Content</option>
               <option value="data-analytics">Data / Analytics</option>
               <option value="training">Training / Technical</option>
+              <option value="subcontracting">Subcontracting</option>
+              <option value="facilities">Facilities / Maintenance</option>
+              <option value="staffing-admin">Staffing / Admin</option>
             </select>
             <Button type="button" variant="outline" onClick={() => void loadContracts(status)}>
               <Search className="h-4 w-4" />
@@ -1031,7 +1072,7 @@ function ContractCenter() {
               onClick={() => setAiOnly((current) => !current)}
             >
               <Sparkles className="h-4 w-4" />
-              AI Fit
+              AI Only
             </Button>
             <Button type="button" variant="outline" onClick={() => downloadContractsCsv(filteredContracts)}>
               <Download className="h-4 w-4" />

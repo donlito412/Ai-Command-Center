@@ -4,6 +4,9 @@
 - Replaced the Contracts page content with a working opportunity manager.
 - Added contract opportunity search, active/saved/reviewing/applying/submitted/archive filters, AI-fit filter, detail view, save action, status updates, editable notes, source links, and CSV export.
 - Added contract-type filtering for AI/automation, web/app/software, media/content, data/analytics, and training/technical opportunities.
+- Added SLED, state, local, federal, and subcontracting scope filters.
+- Changed the default view from AI-only to all active opportunities.
+- Added broader subcontracting, facilities, staffing/admin, event services, and federal prime support opportunity records.
 - Expanded default fallback opportunities so the page loads multiple usable contract records before any external source refresh.
 - Added explicit Search button that queries the product API with the entered search term.
 - Changed fallback/source-target records to use procurement search links and label them `Search Source`; real imported records with actual posting URLs show `Open Opportunity`.

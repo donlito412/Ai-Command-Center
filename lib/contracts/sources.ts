@@ -105,6 +105,50 @@ const fallbackSourceOpportunities: SourceOpportunity[] = [
     value_estimate: 70000,
     notes: "Mobile, app, portal, and citizen service workflow support.",
     tags: ["app", "application", "software", "web"]
+  },
+  {
+    title: "Facilities maintenance subcontracting support",
+    agency: "Regional School District",
+    source: "PA eMarketplace",
+    source_url: "https://www.emarketplace.state.pa.us/Search.aspx/Home.aspx",
+    opportunity_number: "SLED-FAC-006",
+    deadline_at: "2026-07-15T21:00:00.000Z",
+    value_estimate: 90000,
+    notes: "SLED subcontracting target for maintenance, vendor support, and facility service partners.",
+    tags: ["sled", "subcontracting", "facilities", "maintenance", "services"]
+  },
+  {
+    title: "Temporary staffing and administrative support",
+    agency: "County Human Services",
+    source: "PA eMarketplace",
+    source_url: "https://www.emarketplace.state.pa.us/Search.aspx/Home.aspx",
+    opportunity_number: "SLED-STAFF-007",
+    deadline_at: "2026-07-18T21:00:00.000Z",
+    value_estimate: 55000,
+    notes: "State/local administrative services opportunity with subcontracting potential.",
+    tags: ["sled", "subcontracting", "staffing", "admin", "services"]
+  },
+  {
+    title: "Community event production and vendor services",
+    agency: "Parks and Recreation Department",
+    source: "Pittsburgh Procurement",
+    source_url: "https://www.pittsburghpa.gov/Business-Development/Procurement",
+    opportunity_number: "LOCAL-EVENT-008",
+    deadline_at: "2026-07-22T21:00:00.000Z",
+    value_estimate: 65000,
+    notes: "Event services and production opportunity suitable for creative subcontracting.",
+    tags: ["sled", "events", "production", "media", "subcontracting"]
+  },
+  {
+    title: "Federal prime subcontractor support services",
+    agency: "Federal Prime Contractor",
+    source: "SAM.gov",
+    source_url: "https://sam.gov/content/opportunities",
+    opportunity_number: "FED-SUB-009",
+    deadline_at: "2026-07-30T21:00:00.000Z",
+    value_estimate: 150000,
+    notes: "Federal subcontracting target for teaming, technical support, documentation, and admin operations.",
+    tags: ["federal", "subcontracting", "technical", "admin", "services"]
   }
 ];
 
