@@ -29,6 +29,8 @@ import {
   Target,
   Trophy,
   UploadCloud,
+  Volume2,
+  VolumeX,
   Workflow,
   type LucideIcon
 } from "lucide-react";
@@ -46,6 +48,7 @@ import type {
   WorkflowEngine,
   WorkflowTriggerResult
 } from "@/lib/automation/types";
+import { useHudAudio } from "@/lib/audio/use-hud-audio";
 import { useCommandCenterRealtime } from "@/lib/supabase/use-command-center-realtime";
 
 const navItems = [
@@ -175,12 +178,15 @@ function Shell({
 }) {
   const pathname = usePathname();
   const realtime = useCommandCenterRealtime();
+  const hudAudio = useHudAudio();
 
   return (
-    <main className="min-h-screen overflow-hidden bg-background text-foreground">
+    <main className="touch-kiosk min-h-screen overflow-hidden bg-background text-foreground">
       <div className="pointer-events-none fixed inset-0 animated-grid bg-[linear-gradient(90deg,rgba(45,212,191,0.06)_1px,transparent_1px),linear-gradient(180deg,rgba(236,72,153,0.06)_1px,transparent_1px)] bg-[size:64px_64px]" />
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(45,212,191,0.18),transparent_30%),radial-gradient(circle_at_88%_22%,rgba(236,72,153,0.13),transparent_28%),linear-gradient(180deg,rgba(2,6,23,0.12),rgba(2,6,23,0.92))]" />
       <div className="scanline-layer" />
+      <div className="crt-noise-layer" />
+      <div className="cinematic-vignette" />
 
       <div className="relative z-10 grid min-h-screen lg:grid-cols-[248px_1fr]">
         <motion.aside
@@ -211,8 +217,9 @@ function Shell({
                     asChild
                     variant={active ? "default" : "ghost"}
                     className="h-10 justify-start rounded-md px-3 lg:w-full"
+                    onPointerEnter={() => hudAudio.play("click")}
                   >
-                    <Link href={item.href}>
+                    <Link href={item.href} onClick={() => hudAudio.play("transition")}>
                       <item.icon className="h-4 w-4" />
                       {item.label}
                     </Link>
@@ -244,14 +251,26 @@ function Shell({
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Button asChild>
-                <Link href="/agents">
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label={hudAudio.enabled ? "Mute HUD audio" : "Enable HUD audio"}
+                aria-pressed={hudAudio.enabled}
+                onClick={() => {
+                  hudAudio.play("click");
+                  hudAudio.toggle();
+                }}
+              >
+                {hudAudio.enabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+              </Button>
+              <Button asChild onPointerEnter={() => hudAudio.play("click")}>
+                <Link href="/agents" onClick={() => hudAudio.play("transition")}>
                   <Bot className="h-4 w-4" />
                   Run Agents
                 </Link>
               </Button>
-              <Button asChild variant="outline">
-                <Link href="/workflows">
+              <Button asChild variant="outline" onPointerEnter={() => hudAudio.play("click")}>
+                <Link href="/workflows" onClick={() => hudAudio.play("transition")}>
                   <Workflow className="h-4 w-4" />
                   View Pipelines
                 </Link>
@@ -370,16 +389,19 @@ function AgentChatPanel() {
   const [result, setResult] = useState<AgentResult | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState("");
+  const hudAudio = useHudAudio();
 
   async function submitPrompt(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!prompt.trim()) {
+      hudAudio.play("alert");
       return;
     }
 
     setIsRunning(true);
     setError("");
+    hudAudio.play("scan");
 
     try {
       const response = await fetch("/api/orchestrator", {
@@ -394,8 +416,10 @@ function AgentChatPanel() {
       }
 
       setResult(data as AgentResult);
+      hudAudio.play("transition");
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Agent request failed.");
+      hudAudio.play("alert");
     } finally {
       setIsRunning(false);
     }
@@ -411,12 +435,15 @@ function AgentChatPanel() {
         <form className="grid gap-3" onSubmit={submitPrompt}>
           <textarea
             value={prompt}
-            onChange={(event) => setPrompt(event.target.value)}
+            onChange={(event) => {
+              setPrompt(event.target.value);
+              hudAudio.play("click");
+            }}
             placeholder="Send a command to the orchestrator..."
             className="min-h-28 resize-none rounded-md border border-border/70 bg-background/55 px-3 py-3 text-sm outline-none ring-ring/40 transition focus:ring-2"
           />
           <div className="flex flex-wrap items-center gap-3">
-            <Button type="submit" disabled={isRunning}>
+            <Button type="submit" disabled={isRunning} onPointerEnter={() => hudAudio.play("click")}>
               <Bot className="h-4 w-4" />
               {isRunning ? "Routing..." : "Route Prompt"}
             </Button>
@@ -467,11 +494,13 @@ function WorkflowControlPanel() {
   const [result, setResult] = useState<WorkflowTriggerResult | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState("");
+  const hudAudio = useHudAudio();
 
   async function triggerAutomation(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsRunning(true);
     setError("");
+    hudAudio.play("scan");
 
     try {
       const response = await fetch("/api/workflows/trigger", {
@@ -493,12 +522,14 @@ function WorkflowControlPanel() {
       }
 
       setResult(data as WorkflowTriggerResult);
+      hudAudio.play("transition");
     } catch (requestError) {
       setError(
         requestError instanceof Error
           ? requestError.message
           : "Workflow trigger failed."
       );
+      hudAudio.play("alert");
     } finally {
       setIsRunning(false);
     }
@@ -516,7 +547,10 @@ function WorkflowControlPanel() {
         <form className="grid gap-3 lg:grid-cols-[180px_1fr_auto]" onSubmit={triggerAutomation}>
           <select
             value={engine}
-            onChange={(event) => setEngine(event.target.value as WorkflowEngine)}
+            onChange={(event) => {
+              setEngine(event.target.value as WorkflowEngine);
+              hudAudio.play("click");
+            }}
             className="h-10 rounded-md border border-border/70 bg-background/55 px-3 text-sm outline-none ring-ring/40 transition focus:ring-2"
           >
             <option value="n8n">n8n</option>
@@ -525,10 +559,13 @@ function WorkflowControlPanel() {
           </select>
           <input
             value={workflow}
-            onChange={(event) => setWorkflow(event.target.value)}
+            onChange={(event) => {
+              setWorkflow(event.target.value);
+              hudAudio.play("click");
+            }}
             className="h-10 rounded-md border border-border/70 bg-background/55 px-3 text-sm outline-none ring-ring/40 transition focus:ring-2"
           />
-          <Button type="submit" disabled={isRunning}>
+          <Button type="submit" disabled={isRunning} onPointerEnter={() => hudAudio.play("click")}>
             <Workflow className="h-4 w-4" />
             {isRunning ? "Triggering..." : "Trigger Run"}
           </Button>

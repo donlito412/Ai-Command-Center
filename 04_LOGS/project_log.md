@@ -89,3 +89,9 @@
 - **Task Completed**: Wrapped Supabase dashboard data loading and realtime subscription setup so query or channel failures fall back to an error state instead of crashing the Vercel client page.
 - **Output File Path**: `/lib/supabase/use-command-center-realtime.ts`, `/command-center/lib/supabase/use-command-center-realtime.ts`.
 - **Next Step**: Push to `main` and verify the Vercel Visit page renders the command center.
+
+## [2026-05-24] Sound Design & Cinematic HUD Polish
+- **Agent Name**: Codex
+- **Task Completed**: Added synthetic Web Audio HUD sounds, audio toggle control, UI sound triggers, cinematic CRT/noise/vignette overlays, and touchscreen/kiosk interaction polish (TASK-009).
+- **Output File Path**: `/lib/audio/use-hud-audio.ts`, `/command-center/lib/audio/use-hud-audio.ts`, `/components/command-center/views.tsx`, `/command-center/components/command-center/views.tsx`, `/app/globals.css`, `/command-center/app/globals.css`, `/03_OUTPUTS/task_009_sound_design_hud_polish.md`.
+- **Next Step**: Wait for approval to proceed with Validation & System Handover (TASK-010).
