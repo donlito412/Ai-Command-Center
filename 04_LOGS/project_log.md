@@ -113,3 +113,9 @@
 - **Task Completed**: Built the working Contracts module with opportunity search, filters, AI-fit scoring, source refresh/import, status updates, notes, save action, source links, and CSV export (TASK-013).
 - **Output File Path**: `/components/command-center/views.tsx`, `/command-center/components/command-center/views.tsx`, `/lib/contracts/`, `/command-center/lib/contracts/`, `/app/api/contracts/refresh/route.ts`, `/command-center/app/api/contracts/refresh/route.ts`, `/.env.example`, `/command-center/.env.example`, `/03_OUTPUTS/task_013_functional_government_contract_center.md`.
 - **Next Step**: Wait for approval to proceed with Functional AI Wealth Empire Center (TASK-014).
+
+## [2026-05-24] SLED And Local Contract Source Expansion
+- **Agent Name**: Codex
+- **Task Completed**: Expanded contract source refresh to include live SLED/local procurement connectors for PA eMarketplace, COSTARS, PennBid, Pittsburgh Beacon, Allegheny County, Pittsburgh Public Schools, and Pittsburgh Water, with per-source timeouts and direct opportunity-link parsing where available.
+- **Output File Path**: `/lib/contracts/sources.ts`, `/command-center/lib/contracts/sources.ts`, `/03_OUTPUTS/task_013_functional_government_contract_center.md`.
+- **Next Step**: Push to `main` so Vercel redeploys the expanded contract source refresh.

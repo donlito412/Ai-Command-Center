@@ -13,6 +13,8 @@
 - Added contract fit scoring and deadline urgency helpers.
 - Added `/api/contracts/refresh` for source refresh/import.
 - Added SAM.gov API support when `SAM_GOV_API_KEY` is configured.
+- Added live SLED/local source connectors for PA eMarketplace, COSTARS, PennBid, Pittsburgh Beacon, Allegheny County Bonfire, Allegheny County DHS solicitations, Pittsburgh Public Schools, and Pittsburgh Water Bonfire.
+- Added per-source refresh timeouts so one slow procurement portal cannot block the full refresh.
 - Added fallback federal, Pennsylvania, and Pittsburgh source imports so the module works without external API keys.
 - Synced root app and nested `/command-center` app copies.
 
@@ -20,6 +22,7 @@
 - `npm run lint`: passed.
 - `npm run build`: passed.
 - `POST /api/contracts/refresh`: imported fallback source opportunities.
+- `POST /api/contracts/refresh`: imported live PA eMarketplace records with direct solicitation links and Pittsburgh Public Schools RFP/PDF links.
 - `GET /api/products/contract_opportunities?status=active&limit=5`: returned active contract opportunity records.
 - `GET /api/products/contract_opportunities?status=active&q=website&limit=100`: returned the web application opportunity.
 - `/contracts`: rendered the working contract manager controls.
@@ -27,7 +30,13 @@
 ## Source Targets
 - SAM.gov contract opportunities
 - Pennsylvania eMarketplace
-- City of Pittsburgh Procurement
+- Pennsylvania COSTARS
+- PennBid
+- City of Pittsburgh Beacon
+- Allegheny County Bonfire
+- Allegheny County DHS Solicitations
+- Pittsburgh Public Schools RFPs
+- Pittsburgh Water Bonfire
 
 ## Next Step
 Execute `TASK-014` to build the Functional AI Wealth Empire Center.

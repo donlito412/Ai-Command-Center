@@ -17,6 +17,64 @@ type SourceOpportunity = {
   tags: string[];
 };
 
+type PortalSource = {
+  agency: string;
+  source: string;
+  url: string;
+  tags: string[];
+};
+
+const sledPortalSources: PortalSource[] = [
+  {
+    agency: "Commonwealth of Pennsylvania",
+    source: "PA eMarketplace",
+    url: "https://www.emarketplace.state.pa.us/Search.aspx/Home.aspx",
+    tags: ["sled", "state", "pennsylvania", "emarketplace"]
+  },
+  {
+    agency: "Pennsylvania COSTARS",
+    source: "COSTARS Electronic Bidding",
+    url: "https://www.dgs.internet.state.pa.us/COSTARSElecBidd/",
+    tags: ["sled", "state", "local", "costars", "cooperative-purchasing"]
+  },
+  {
+    agency: "PennBid Agencies",
+    source: "PennBid",
+    url: "https://pennbid.net/",
+    tags: ["sled", "local", "pennbid", "municipal", "subcontracting"]
+  },
+  {
+    agency: "City of Pittsburgh",
+    source: "Pittsburgh Beacon",
+    url: "https://procurement.pittsburghpa.gov/opportunities/",
+    tags: ["sled", "local", "pittsburgh", "beacon"]
+  },
+  {
+    agency: "Allegheny County",
+    source: "Allegheny County Bonfire",
+    url: "https://alleghenycounty.bonfirehub.com/portal/?tab=openOpportunities",
+    tags: ["sled", "county", "allegheny", "bonfire"]
+  },
+  {
+    agency: "Allegheny County Department of Human Services",
+    source: "Allegheny County DHS Solicitations",
+    url: "https://solicitations.alleghenycounty.us/",
+    tags: ["sled", "county", "human-services", "rfp"]
+  },
+  {
+    agency: "Pittsburgh Public Schools",
+    source: "Pittsburgh Public Schools",
+    url: "https://www.pghschools.org/community/business-opportunities/rfps",
+    tags: ["sled", "local", "schools", "education"]
+  },
+  {
+    agency: "Pittsburgh Water",
+    source: "Pittsburgh Water Bonfire",
+    url: "https://pgh2o.bonfirehub.com/portal/?tab=openOpportunities",
+    tags: ["sled", "local", "authority", "bonfire", "infrastructure"]
+  }
+];
+
 const fallbackSourceOpportunities: SourceOpportunity[] = [
   {
     title: "AI workflow automation and technical support services",
@@ -152,6 +210,215 @@ const fallbackSourceOpportunities: SourceOpportunity[] = [
   }
 ];
 
+function decodeHtml(value: string) {
+  return value
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, "\"")
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, " ")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function createAbsoluteUrl(href: string, baseUrl: string) {
+  try {
+    return new URL(href, baseUrl).toString();
+  } catch {
+    return baseUrl;
+  }
+}
+
+function isLikelyOpportunity(source: PortalSource, title: string, href: string) {
+  const text = `${title} ${href}`.toLowerCase();
+  const blockedTitles = [
+    "solicitation #",
+    "solicitation title",
+    "solicitation start date",
+    "solicitation due date",
+    "bid opening date",
+    "skip to content",
+    "request demo",
+    "request overview",
+    "support.bonfire@eunasolutions.com",
+    "open public opportunities",
+    "past public opportunities",
+    "public contracts",
+    "view auction",
+    "rfp archive",
+    "facilities bid results archive",
+    "minority/women business department"
+  ];
+
+  if (
+    href.startsWith("javascript:") ||
+    href.startsWith("mailto:") ||
+    href.includes("%20") ||
+    blockedTitles.includes(title.toLowerCase())
+  ) {
+    return false;
+  }
+
+  if (source.source === "PA eMarketplace") {
+    return href.includes("emarketplace.state.pa.us/Solicitations.aspx?SID=");
+  }
+
+  if (source.source.includes("Bonfire")) {
+    return href.includes(".bonfirehub.com/opportunities/") && !href.includes("/auctions/");
+  }
+
+  if (source.source === "PennBid") {
+    return href.includes("pennbidprocureware.com") || href.includes("/bid/");
+  }
+
+  if (source.source === "Pittsburgh Beacon") {
+    return href.includes("procurement.pittsburghpa.gov/opportunities/") && href !== source.url;
+  }
+
+  if (source.source === "Pittsburgh Public Schools") {
+    return (
+      (text.includes("rfp") || text.includes("bid") || text.includes("proposal")) &&
+      !text.includes("archive") &&
+      !text.includes("policy")
+    );
+  }
+
+  return [
+    "bid",
+    "rfp",
+    "rfq",
+    "rfi",
+    "solicitation",
+    "opportunit",
+    "proposal",
+    "contract",
+    "invitation"
+  ].some((term) => text.includes(term));
+}
+
+function parsePaMarketplaceHtml(source: PortalSource, html: string): SourceOpportunity[] {
+  const rows = [...html.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi)];
+  const opportunities: SourceOpportunity[] = [];
+  const seen = new Set<string>();
+
+  for (const row of rows) {
+    const rowHtml = row[1];
+    const link = rowHtml.match(/href=["']([^"']*Solicitations\.aspx\?SID=([^"']+))["']/i);
+
+    if (!link) {
+      continue;
+    }
+
+    const sourceUrl = createAbsoluteUrl(decodeHtml(link[1]), source.url);
+    const sid = decodeHtml(link[2]);
+    const cells = [...rowHtml.matchAll(/<td\b[^>]*>([\s\S]*?)<\/td>/gi)]
+      .map((cell) => decodeHtml(cell[1]))
+      .filter(Boolean);
+    const title =
+      cells.find((cell) =>
+        cell !== sid &&
+        !/^\d{1,2}\/\d{1,2}\/\d{4}/.test(cell) &&
+        !/^open$/i.test(cell) &&
+        cell.length > 12
+      ) ?? sid;
+
+    if (seen.has(sid)) {
+      continue;
+    }
+
+    seen.add(sid);
+    opportunities.push({
+      title,
+      agency: source.agency,
+      source: source.source,
+      source_url: sourceUrl,
+      opportunity_number: sid,
+      deadline_at: null,
+      value_estimate: null,
+      notes: `Imported from ${source.source}. Open source link for current bid details, documents, deadline, and submission requirements.`,
+      tags: source.tags
+    });
+
+    if (opportunities.length >= 12) {
+      break;
+    }
+  }
+
+  return opportunities;
+}
+
+function parsePortalHtml(source: PortalSource, html: string): SourceOpportunity[] {
+  if (source.source === "PA eMarketplace") {
+    return parsePaMarketplaceHtml(source, html);
+  }
+
+  const matches = [...html.matchAll(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)];
+  const seen = new Set<string>();
+  const opportunities: SourceOpportunity[] = [];
+
+  for (const match of matches) {
+    const title = decodeHtml(match[2]);
+    const sourceUrl = createAbsoluteUrl(decodeHtml(match[1]), source.url);
+
+    if (title.length < 8 || !isLikelyOpportunity(source, title, sourceUrl)) {
+      continue;
+    }
+
+    const key = `${title}:${sourceUrl}`;
+
+    if (seen.has(key)) {
+      continue;
+    }
+
+    seen.add(key);
+
+    opportunities.push({
+      title,
+      agency: source.agency,
+      source: source.source,
+      source_url: sourceUrl,
+      opportunity_number: `${source.source}:${title}`.slice(0, 120),
+      deadline_at: null,
+      value_estimate: null,
+      notes: `Imported from ${source.source}. Open source link for current bid details, documents, deadline, and submission requirements.`,
+      tags: source.tags
+    });
+
+    if (opportunities.length >= 12) {
+      break;
+    }
+  }
+
+  return opportunities;
+}
+
+async function fetchPortalOpportunities(source: PortalSource): Promise<SourceOpportunity[]> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+
+  try {
+    const response = await fetch(source.url, {
+      headers: {
+        "user-agent": "Ai Command Center contract source monitor"
+      },
+      next: { revalidate: 3600 },
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const html = await response.text();
+
+    return parsePortalHtml(source, html);
+  } catch {
+    return [];
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 function toContractRecord(source: SourceOpportunity) {
   const score = scoreContractFit({
     title: source.title,
@@ -199,12 +466,19 @@ async function fetchSamOpportunities(): Promise<SourceOpportunity[]> {
   url.searchParams.set("api_key", apiKey);
   url.searchParams.set("postedFrom", formatDate(postedFrom));
   url.searchParams.set("postedTo", formatDate(postedTo));
-  url.searchParams.set("limit", "10");
-  url.searchParams.set("title", "software automation artificial intelligence web data");
+  url.searchParams.set("limit", "25");
+  url.searchParams.set("title", "services software staffing facility media training data");
 
-  const response = await fetch(url, { next: { revalidate: 3600 } });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+  const response = await fetch(url, {
+    next: { revalidate: 3600 },
+    signal: controller.signal
+  })
+    .catch(() => null)
+    .finally(() => clearTimeout(timeout));
 
-  if (!response.ok) {
+  if (!response?.ok) {
     return [];
   }
 
@@ -240,6 +514,7 @@ export async function refreshContractSources() {
   );
   const sourceOpportunities = [
     ...(await fetchSamOpportunities()),
+    ...(await Promise.all(sledPortalSources.map(fetchPortalOpportunities))).flat(),
     ...fallbackSourceOpportunities
   ];
   const imported: ContractOpportunity[] = [];
