@@ -119,3 +119,9 @@
 - **Task Completed**: Expanded contract source refresh to include live SLED/local procurement connectors for PA eMarketplace, COSTARS, PennBid, Pittsburgh Beacon, Allegheny County, Pittsburgh Public Schools, and Pittsburgh Water, with per-source timeouts and direct opportunity-link parsing where available.
 - **Output File Path**: `/lib/contracts/sources.ts`, `/command-center/lib/contracts/sources.ts`, `/03_OUTPUTS/task_013_functional_government_contract_center.md`.
 - **Next Step**: Push to `main` so Vercel redeploys the expanded contract source refresh.
+
+## [2026-05-24] Contract Filters And Direct Link Cleanup
+- **Agent Name**: Codex
+- **Task Completed**: Cleaned up contract source/category filters, added supply fulfillment and construction trade categories, fixed the filter row overflow, removed misleading fallback source links from the action area, and corrected AI matching so state names do not trigger AI-only scoring.
+- **Output File Path**: `/components/command-center/views.tsx`, `/command-center/components/command-center/views.tsx`, `/lib/products/fallback-data.ts`, `/command-center/lib/products/fallback-data.ts`, `/lib/contracts/matching.ts`, `/command-center/lib/contracts/matching.ts`, `/lib/contracts/sources.ts`, `/command-center/lib/contracts/sources.ts`, `/03_OUTPUTS/task_013_functional_government_contract_center.md`.
+- **Next Step**: Push to `main` so Vercel redeploys the corrected Contracts UI.

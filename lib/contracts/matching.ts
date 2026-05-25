@@ -20,6 +20,14 @@ const aiServiceTerms = [
   "technical"
 ];
 
+function termMatches(text: string, term: string) {
+  if (term === "ai") {
+    return /\bai\b/.test(text);
+  }
+
+  return text.includes(term);
+}
+
 export function scoreContractFit(input: {
   title: string;
   agency?: string;
@@ -35,7 +43,7 @@ export function scoreContractFit(input: {
     .filter(Boolean)
     .join(" ")
     .toLowerCase();
-  const matchedTerms = aiServiceTerms.filter((term) => text.includes(term));
+  const matchedTerms = aiServiceTerms.filter((term) => termMatches(text, term));
   const fitScore = Math.min(100, 45 + matchedTerms.length * 9);
 
   return {

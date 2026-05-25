@@ -207,6 +207,28 @@ const fallbackSourceOpportunities: SourceOpportunity[] = [
     value_estimate: 150000,
     notes: "Federal subcontracting target for teaming, technical support, documentation, and admin operations.",
     tags: ["federal", "subcontracting", "technical", "admin", "services"]
+  },
+  {
+    title: "Janitorial supplies, paper goods, and fulfillment services",
+    agency: "Commonwealth of Pennsylvania",
+    source: "PA eMarketplace",
+    source_url: "https://www.emarketplace.state.pa.us/Search.aspx/Home.aspx",
+    opportunity_number: "PA-SUPPLY-FULFILLMENT",
+    deadline_at: "2026-07-19T21:00:00.000Z",
+    value_estimate: 75000,
+    notes: "SLED supply fulfillment target for recurring products, delivery, inventory, and vendor support.",
+    tags: ["sled", "supply", "supplies", "fulfillment", "logistics", "delivery"]
+  },
+  {
+    title: "Building renovation and construction trade services",
+    agency: "Pittsburgh Regional Authority",
+    source: "Local Procurement",
+    source_url: "https://procurement.pittsburghpa.gov/opportunities/",
+    opportunity_number: "LOCAL-CONSTRUCTION-010",
+    deadline_at: "2026-07-26T21:00:00.000Z",
+    value_estimate: 185000,
+    notes: "SLED construction opportunity for renovation, trades, repair, and subcontracting support.",
+    tags: ["sled", "construction", "trades", "renovation", "repair", "subcontracting"]
   }
 ];
 
@@ -392,6 +414,34 @@ function parsePortalHtml(source: PortalSource, html: string): SourceOpportunity[
   return opportunities;
 }
 
+function inferContractTags(source: SourceOpportunity) {
+  const text = [
+    source.title,
+    source.agency,
+    source.source,
+    source.notes,
+    source.tags.join(" ")
+  ].join(" ").toLowerCase();
+  const tags: string[] = [];
+  const keywordGroups: Array<[string, string[]]> = [
+    ["supply", ["supply", "supplies", "material", "materials", "equipment", "goods", "product"]],
+    ["fulfillment", ["fulfillment", "warehouse", "inventory", "delivery", "logistics", "distribution", "courier"]],
+    ["construction", ["construction", "renovation", "paving", "concrete", "roof", "roofing", "demolition", "build"]],
+    ["trades", ["electrical", "plumbing", "hvac", "carpentry", "trade", "trades", "repair"]],
+    ["facilities", ["facility", "facilities", "maintenance", "janitorial", "grounds"]],
+    ["staffing", ["staffing", "temporary staff", "personnel", "administrative"]],
+    ["subcontracting", ["subcontract", "subcontracting", "prime", "teaming"]]
+  ];
+
+  for (const [tag, keywords] of keywordGroups) {
+    if (keywords.some((keyword) => text.includes(keyword))) {
+      tags.push(tag);
+    }
+  }
+
+  return tags;
+}
+
 async function fetchPortalOpportunities(source: PortalSource): Promise<SourceOpportunity[]> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 8000);
@@ -434,7 +484,7 @@ function toContractRecord(source: SourceOpportunity) {
     priority: score.priority,
     owner: "Murphree Enterprises LLC",
     due_at: source.deadline_at,
-    tags: [...new Set([...source.tags, ...score.matchedTerms])],
+    tags: [...new Set([...source.tags, ...inferContractTags(source), ...score.matchedTerms])],
     notes: source.notes,
     metadata: {
       match_terms: score.matchedTerms,
@@ -467,7 +517,7 @@ async function fetchSamOpportunities(): Promise<SourceOpportunity[]> {
   url.searchParams.set("postedFrom", formatDate(postedFrom));
   url.searchParams.set("postedTo", formatDate(postedTo));
   url.searchParams.set("limit", "25");
-  url.searchParams.set("title", "services software staffing facility media training data");
+  url.searchParams.set("title", "services supplies construction staffing facility media training data");
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 8000);

@@ -768,7 +768,7 @@ function ContractCenter() {
   const [selectedId, setSelectedId] = useState<string>("");
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("active");
-  const [opportunityScope, setOpportunityScope] = useState("all");
+  const [sourceGroup, setSourceGroup] = useState("all");
   const [contractType, setContractType] = useState("all");
   const [aiOnly, setAiOnly] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -778,7 +778,12 @@ function ContractCenter() {
   const isActualOpportunityLink = (contract: ContractOpportunity) =>
     Boolean(
       contract.source_url &&
-        !["local-fallback", "Local Procurement", "Pittsburgh Procurement", "PA eMarketplace"].includes(contract.source)
+        !contract.source_url.includes("/content/opportunities") &&
+        !contract.source_url.includes("/Search.aspx/Home.aspx") &&
+        !contract.source_url.includes("/Business-Development/Procurement") &&
+        !contract.source_url.includes("pennbid.net/") &&
+        !contract.source_url.includes("/portal/?tab=openOpportunities") &&
+        contract.source !== "local-fallback"
     );
 
   async function loadContracts(nextStatus = status) {
@@ -902,21 +907,38 @@ function ContractCenter() {
             return ["staffing", "admin", "administrative", "services"].includes(normalizedTag);
           }
 
+          if (contractType === "supply-fulfillment") {
+            return ["supply", "supplies", "fulfillment", "logistics", "delivery", "inventory"].includes(normalizedTag);
+          }
+
+          if (contractType === "construction-trades") {
+            return ["construction", "trades", "renovation", "repair", "paving", "roofing", "hvac", "electrical", "plumbing"].includes(normalizedTag);
+          }
+
           return normalizedTag === contractType;
         });
       const scopeMatches =
-        opportunityScope === "all" ||
-        contract.tags.includes(opportunityScope) ||
-        (opportunityScope === "sled" &&
-          ["PA eMarketplace", "Pittsburgh Procurement", "Local Procurement", "local-fallback"].includes(contract.source)) ||
-        (opportunityScope === "local" &&
-          ["Pittsburgh Procurement", "Local Procurement", "local-fallback"].includes(contract.source)) ||
-        (opportunityScope === "state" && contract.source === "PA eMarketplace") ||
-        (opportunityScope === "federal" && contract.source === "SAM.gov");
+        sourceGroup === "all" ||
+        (sourceGroup === "sled" &&
+          (contract.tags.includes("sled") ||
+            [
+              "PA eMarketplace",
+              "COSTARS Electronic Bidding",
+              "PennBid",
+              "Pittsburgh Beacon",
+              "Allegheny County Bonfire",
+              "Allegheny County DHS Solicitations",
+              "Pittsburgh Public Schools",
+              "Pittsburgh Water Bonfire",
+              "Local Procurement",
+              "local-fallback"
+            ].includes(contract.source))) ||
+        (sourceGroup === "federal" && contract.source === "SAM.gov") ||
+        (sourceGroup === "subcontracting" && contract.tags.includes("subcontracting"));
 
       return queryMatches && aiMatches && typeMatches && scopeMatches;
     });
-  }, [aiOnly, contractType, contracts, opportunityScope, query]);
+  }, [aiOnly, contractType, contracts, sourceGroup, query]);
 
   const selectedContract =
     filteredContracts.find((contract) => contract.id === selectedId) ??
@@ -993,8 +1015,8 @@ function ContractCenter() {
 
       <motion.div variants={fadeUp}>
         <Card className="hud-panel holo-card bg-card/76 backdrop-blur">
-          <CardContent className="relative z-10 grid gap-3 py-5 xl:grid-cols-[1fr_150px_150px_190px_auto_auto_auto]">
-            <label className="flex h-11 items-center gap-2 rounded-md border border-border/70 bg-background/55 px-3">
+          <CardContent className="relative z-10 flex flex-wrap items-center gap-3 py-5">
+            <label className="flex h-11 min-w-64 flex-1 items-center gap-2 rounded-md border border-border/70 bg-background/55 px-3">
               <Search className="h-4 w-4 text-muted-foreground" />
               <input
                 value={query}
@@ -1017,7 +1039,7 @@ function ContractCenter() {
                 setStatus(event.target.value);
                 void loadContracts(event.target.value);
               }}
-              className="h-11 rounded-md border border-border/70 bg-background/55 px-3 text-sm outline-none"
+              className="h-11 min-w-36 rounded-md border border-border/70 bg-background/55 px-3 text-sm outline-none"
             >
               <option value="active">Active</option>
               <option value="saved">Saved</option>
@@ -1028,20 +1050,18 @@ function ContractCenter() {
               <option value="all">All</option>
             </select>
             <select
-              value={opportunityScope}
+              value={sourceGroup}
               onChange={(event) => {
-                setOpportunityScope(event.target.value);
+                setSourceGroup(event.target.value);
                 hudAudio.play("click");
               }}
-              className="h-11 rounded-md border border-border/70 bg-background/55 px-3 text-sm outline-none"
-              aria-label="Opportunity scope"
+              className="h-11 min-w-44 rounded-md border border-border/70 bg-background/55 px-3 text-sm outline-none"
+              aria-label="Source group"
             >
-              <option value="all">All scopes</option>
-              <option value="sled">SLED</option>
-              <option value="state">State</option>
-              <option value="local">Local</option>
+              <option value="all">All sources</option>
+              <option value="sled">SLED / state-local</option>
               <option value="federal">Federal</option>
-              <option value="subcontracting">Subcontracting</option>
+              <option value="subcontracting">Prime / subcontracting</option>
             </select>
             <select
               value={contractType}
@@ -1049,7 +1069,7 @@ function ContractCenter() {
                 setContractType(event.target.value);
                 hudAudio.play("click");
               }}
-              className="h-11 rounded-md border border-border/70 bg-background/55 px-3 text-sm outline-none"
+              className="h-11 min-w-56 rounded-md border border-border/70 bg-background/55 px-3 text-sm outline-none"
               aria-label="Contract type"
             >
               <option value="all">All contract types</option>
@@ -1059,6 +1079,8 @@ function ContractCenter() {
               <option value="data-analytics">Data / Analytics</option>
               <option value="training">Training / Technical</option>
               <option value="subcontracting">Subcontracting</option>
+              <option value="supply-fulfillment">Supply / Fulfillment</option>
+              <option value="construction-trades">Construction / Trades</option>
               <option value="facilities">Facilities / Maintenance</option>
               <option value="staffing-admin">Staffing / Admin</option>
             </select>
@@ -1223,12 +1245,17 @@ function ContractCenter() {
                       <Star className="h-4 w-4" />
                       Save
                     </Button>
-                    {selectedContract.source_url ? (
+                    {selectedContract.source_url && isActualOpportunityLink(selectedContract) ? (
                       <Button asChild type="button" variant="outline">
                         <a href={selectedContract.source_url} target="_blank" rel="noreferrer">
                           <ExternalLink className="h-4 w-4" />
-                          {isActualOpportunityLink(selectedContract) ? "Open Opportunity" : "Search Source"}
+                          Open Opportunity
                         </a>
+                      </Button>
+                    ) : selectedContract.source_url ? (
+                      <Button type="button" variant="outline" disabled>
+                        <ExternalLink className="h-4 w-4" />
+                        Direct link unavailable
                       </Button>
                     ) : null}
                   </div>
