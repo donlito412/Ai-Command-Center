@@ -1,4 +1,7 @@
-import { supabaseServer } from "@/lib/supabase/server";
+import {
+  isSupabaseServerConfigured,
+  supabaseServer
+} from "@/lib/supabase/server";
 import {
   fallbackProductData
 } from "./fallback-data";
@@ -17,6 +20,10 @@ type ProductRecordInput<Resource extends ProductResource> =
   };
 
 const mutableFallbackData = structuredClone(fallbackProductData);
+
+function formatSupabaseError(action: string, resource: ProductResource, message?: string) {
+  return `Supabase ${action} failed for ${resource}${message ? `: ${message}` : "."}`;
+}
 
 export function isProductResource(resource: string): resource is ProductResource {
   return productResources.includes(resource as ProductResource);
@@ -69,7 +76,12 @@ async function writeActivityEvent(
   };
 
   if (supabaseServer) {
-    await supabaseServer.from("activity_events").insert(event);
+    const { error } = await supabaseServer.from("activity_events").insert(event);
+
+    if (error) {
+      console.error(formatSupabaseError("activity write", "activity_events", error.message));
+    }
+
     return;
   }
 
@@ -96,6 +108,10 @@ export async function listProductRecords<Resource extends ProductResource>(
         source: "supabase",
         records: filterRecords(data as ProductRecordMap[Resource][], searchParams)
       };
+    }
+
+    if (error) {
+      console.error(formatSupabaseError("list", resource, error.message));
     }
   }
 
@@ -132,6 +148,12 @@ export async function createProductRecord<Resource extends ProductResource>(
         record: data as ProductRecordMap[Resource]
       };
     }
+
+    throw new Error(formatSupabaseError("create", resource, error?.message));
+  }
+
+  if (isSupabaseServerConfigured) {
+    throw new Error(formatSupabaseError("create", resource, "Server client is unavailable."));
   }
 
   const record = {
@@ -175,6 +197,12 @@ export async function updateProductRecord<Resource extends ProductResource>(
         record: data as ProductRecordMap[Resource]
       };
     }
+
+    throw new Error(formatSupabaseError("update", resource, error?.message));
+  }
+
+  if (isSupabaseServerConfigured) {
+    throw new Error(formatSupabaseError("update", resource, "Server client is unavailable."));
   }
 
   const records = mutableFallbackData[resource];
@@ -214,6 +242,12 @@ export async function deleteProductRecord(
         id
       };
     }
+
+    throw new Error(formatSupabaseError("delete", resource, error.message));
+  }
+
+  if (isSupabaseServerConfigured) {
+    throw new Error(formatSupabaseError("delete", resource, "Server client is unavailable."));
   }
 
   const records = mutableFallbackData[resource];

@@ -11,6 +11,9 @@
 - Added supply/fulfillment and construction/trades contract categories and seed records.
 - Fixed fallback records so they no longer show home-page links as if they were direct opportunity links.
 - Fixed AI-fit matching so `ai` does not match inside unrelated words like `Pennsylvania`.
+- Added `/api/system/persistence` to verify whether the app is using Supabase persistence or local fallback without exposing keys.
+- Updated product writes so configured Supabase write failures return clear errors instead of silently falling back to non-persistent memory.
+- Replaced legacy dashboard Supabase table reads with product API reads so the dashboard status reflects the functional product data layer.
 - Expanded default fallback opportunities so the page loads multiple usable contract records before any external source refresh.
 - Added explicit Search button that queries the product API with the entered search term.
 - Changed fallback/source-target records to use procurement search links and label them `Search Source`; real imported records with actual posting URLs show `Open Opportunity`.
@@ -31,6 +34,7 @@
 - `GET /api/products/contract_opportunities?status=active&q=website&limit=100`: returned the web application opportunity.
 - `GET /api/products/contract_opportunities?status=active&q=construction&limit=100`: returned the construction/trades opportunity.
 - `GET /api/products/contract_opportunities?status=active&q=supply&limit=100`: returned the supply/fulfillment opportunity.
+- `GET /api/system/persistence`: returned fallback mode locally because Supabase server env is not configured in `.env.local`.
 - `/contracts`: rendered the working contract manager controls.
 
 ## Source Targets

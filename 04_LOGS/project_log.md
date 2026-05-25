@@ -125,3 +125,9 @@
 - **Task Completed**: Cleaned up contract source/category filters, added supply fulfillment and construction trade categories, fixed the filter row overflow, removed misleading fallback source links from the action area, and corrected AI matching so state names do not trigger AI-only scoring.
 - **Output File Path**: `/components/command-center/views.tsx`, `/command-center/components/command-center/views.tsx`, `/lib/products/fallback-data.ts`, `/command-center/lib/products/fallback-data.ts`, `/lib/contracts/matching.ts`, `/command-center/lib/contracts/matching.ts`, `/lib/contracts/sources.ts`, `/command-center/lib/contracts/sources.ts`, `/03_OUTPUTS/task_013_functional_government_contract_center.md`.
 - **Next Step**: Push to `main` so Vercel redeploys the corrected Contracts UI.
+
+## [2026-05-24] Product Persistence Hardening
+- **Agent Name**: Codex
+- **Task Completed**: Added a persistence health endpoint, removed silent Supabase write fallback when server env is configured, and switched the dashboard status hook from legacy Supabase tables to the functional product API data layer.
+- **Output File Path**: `/app/api/system/persistence/route.ts`, `/command-center/app/api/system/persistence/route.ts`, `/lib/products/store.ts`, `/command-center/lib/products/store.ts`, `/lib/supabase/server.ts`, `/command-center/lib/supabase/server.ts`, `/lib/supabase/use-command-center-realtime.ts`, `/command-center/lib/supabase/use-command-center-realtime.ts`, `/03_OUTPUTS/task_013_functional_government_contract_center.md`.
+- **Next Step**: Configure Supabase env variables on Vercel and run `/database/schemas/003_core_product_data.sql` in Supabase SQL Editor.
